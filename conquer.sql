@@ -1,0 +1,7 @@
+CREATE TABLE gym_members (
+    ID INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Age INT(3) NOT NULL,
+    MembershipPlan VARCHAR(50) NOT NULL,
+    ContactNumber VARCHAR(15) NOT NULL
+);
