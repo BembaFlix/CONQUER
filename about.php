@@ -23,7 +23,6 @@ session_start();
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="index-style.css">
     <link rel="stylesheet" href="about-style.css">
 </head>
 <body>
@@ -295,8 +294,68 @@ session_start();
         </div>
     </section>
 
-    <!-- Footer (Same as index.html) -->
-    <?php include 'footer.php'; ?>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <i class="fas fa-dumbbell"></i>
+                    <span>CONQUER</span>
+                </div>
+                <p>Redefining fitness limits since 2010</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <div class="link-group">
+                    <h4>Membership</h4>
+                    <a href="index.html#memberships">Plans & Pricing</a>
+                    <a href="#" onclick="openMembershipModal()">Free Trial</a>
+                    <a href="index.html#contact">Corporate Plans</a>
+                    <a href="index.html#contact">Student Discount</a>
+                </div>
+                
+                <div class="link-group">
+                    <h4>Facilities</h4>
+                    <a href="index.html#facilities">Equipment</a>
+                    <a href="index.html#contact">Classes Schedule</a>
+                    <a href="index.html#trainers">Personal Training</a>
+                    <a href="index.html#facilities">Recovery Center</a>
+                </div>
+                
+                <div class="link-group">
+                    <h4>Company</h4>
+                    <a href="about.php">About Us</a>
+                    <a href="index.html#contact">Careers</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+            
+            <div class="footer-contact">
+                <h4>Contact Us</h4>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Fitness Street, Cityville</p>
+                <p><i class="fas fa-phone"></i> (555) 123-4567</p>
+                <p><i class="fas fa-envelope"></i> info@conquergym.com</p>
+                <p><i class="fas fa-clock"></i> Open 24/7 for Elite Members</p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 Conquer Gym. All rights reserved. | Made with <i class="fas fa-heart"></i> for fitness warriors</p>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
 
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -341,6 +400,23 @@ session_start();
         // Observe hero stats
         const heroStats = document.querySelector('.about-hero-stats');
         if (heroStats) observer.observe(heroStats);
+        
+        // Modal functions (copied from main.js)
+        function openMembershipModal() {
+            document.getElementById('membershipModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('membershipModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('membershipModal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>

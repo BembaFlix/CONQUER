@@ -458,3 +458,296 @@
         grid-template-columns: 1fr;
     }
 }
+/* ===== MODAL STYLES ===== */
+.plan-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.plan-option {
+    padding: 1.5rem;
+    background: var(--light-color);
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 2px solid transparent;
+}
+
+.plan-option:hover,
+.plan-option.selected {
+    border-color: var(--primary-color);
+    transform: translateY(-5px);
+}
+
+.plan-option.popular {
+    border-color: var(--primary-color);
+}
+
+.plan-option h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.plan-option .price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.plan-option .price span {
+    font-size: 1rem;
+    color: var(--gray);
+}
+
+.form-step {
+    display: none;
+}
+
+.form-step.active {
+    display: block;
+}
+
+.btn-next, .btn-back, .btn-submit {
+    padding: 1rem 2rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+.btn-next {
+    background: var(--gradient-primary);
+    color: white;
+    margin-top: 1rem;
+}
+
+.btn-back {
+    background: var(--light-color);
+    color: var(--dark-color);
+}
+
+.btn-submit {
+    background: var(--success);
+    color: white;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.progress-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.progress-step {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--light-color);
+    position: relative;
+}
+
+.progress-step.active {
+    background: var(--gradient-primary);
+}
+
+.progress-step::after {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 4px;
+    background: var(--light-color);
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+}
+
+.progress-step:last-child::after {
+    display: none;
+}
+
+.progress-step.active::after {
+    background: var(--gradient-primary);
+}
+.trainer-mention {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--light-color);
+    border-radius: var(--radius-md);
+}
+
+.trainer-mention i {
+    color: var(--accent-color);
+}
+/* ===== MODAL STYLES ===== */
+.plan-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.plan-option {
+    padding: 1.5rem;
+    background: var(--light-color);
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 2px solid transparent;
+}
+
+.plan-option:hover,
+.plan-option.selected {
+    border-color: var(--primary-color);
+    transform: translateY(-5px);
+}
+
+.plan-option.popular {
+    border-color: var(--primary-color);
+}
+
+.plan-option h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.plan-option .price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.plan-option .price span {
+    font-size: 1rem;
+    color: var(--gray);
+}
+
+.form-step {
+    display: none;
+}
+
+.form-step.active {
+    display: block;
+}
+
+.btn-next, .btn-back, .btn-submit {
+    padding: 1rem 2rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+}
+
+.btn-next {
+    background: var(--gradient-primary);
+    color: white;
+    margin-top: 1rem;
+}
+
+.btn-back {
+    background: var(--light-color);
+    color: var(--dark-color);
+}
+
+.btn-submit {
+    background: var(--success);
+    color: white;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+.progress-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.progress-step {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--light-color);
+    position: relative;
+}
+
+.progress-step.active {
+    background: var(--gradient-primary);
+}
+
+.progress-step::after {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 4px;
+    background: var(--light-color);
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+}
+
+.progress-step:last-child::after {
+    display: none;
+}
+
+.progress-step.active::after {
+    background: var(--gradient-primary);
+}
+
+/* Trainer mention styles */
+.trainer-mention {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--light-color);
+    border-radius: var(--radius-md);
+}
+
+.trainer-mention i {
+    color: var(--accent-color);
+}
+
+/* Responsive styles for modal */
+@media (max-width: 768px) {
+    .plan-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-next, .btn-back, .btn-submit {
+        width: 100%;
+        justify-content: center;
+    }
+}

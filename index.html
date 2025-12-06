@@ -53,7 +53,7 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="#" class="nav-logo">
+            <a href="index.html" class="nav-logo">
                 <div class="logo-icon">
                     <i class="fas fa-dumbbell"></i>
                 </div>
@@ -63,20 +63,20 @@
             <div class="nav-menu">
                 <ul class="nav-list">
                     <li class="nav-item"><a href="#home" class="nav-link active">Home</a></li>
-                    <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
+                    <li class="nav-item"><a href="about.php" class="nav-link">About</a></li>
                     <li class="nav-item"><a href="#memberships" class="nav-link">Memberships</a></li>
                     <li class="nav-item"><a href="#trainers" class="nav-link">Trainers</a></li>
                     <li class="nav-item"><a href="#facilities" class="nav-link">Facilities</a></li>
-                    <li class="nav-item"><a href="#testimonials" class="nav-link">Success Stories</a></li>
+                    <li class="nav-item"><a href="success-stories.php" class="nav-link">Success Stories</a></li>
                     <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
                 </ul>
                 
                 <div class="nav-actions">
-                    <button class="btn-login">
+                    <button class="btn-login" onclick="window.location.href='login.php'">
                         <i class="fas fa-user"></i>
                         <span>Login</span>
                     </button>
-                    <button class="btn-primary btn-join">
+                    <button class="btn-primary btn-join" onclick="openMembershipModal()">
                         <span>Join Now</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
@@ -312,7 +312,7 @@
             
             <div class="trainer-card" data-aos="flip-left" data-aos-delay="200">
                 <div class="trainer-image">
-                    <img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?ixlib=rb-4.0.3&auto=format&fit=crop&w-800&q=80" alt="Trainer Sarah">
+                    <img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Trainer Sarah">
                     <div class="trainer-overlay">
                         <div class="social-links">
                             <a href="#"><i class="fab fa-instagram"></i></a>
@@ -406,105 +406,170 @@
         </div>
     </section>
 
-    <!-- Registration Modal -->
-    <div class="modal-overlay" id="membershipModal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h2>Join the Conquer Community</h2>
-                <button class="modal-close" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="section-header" data-aos="fade-up">
+            <h2 class="section-title">GET IN <span class="highlight">TOUCH</span></h2>
+            <p class="section-subtitle">We're here to help you start your fitness journey</p>
+        </div>
+        
+        <div class="contact-container" data-aos="fade-up">
+            <div class="contact-info">
+                <div class="info-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <h3>Our Location</h3>
+                        <p>123 Fitness Street, Cityville</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <h3>Phone Number</h3>
+                        <p>(555) 123-4567</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <h3>Email Address</h3>
+                        <p>info@conquergym.com</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <h3>Working Hours</h3>
+                        <p>Open 24/7 for Elite Members</p>
+                        <p>Mon-Fri: 5AM - 11PM</p>
+                        <p>Weekends: 6AM - 10PM</p>
+                    </div>
+                </div>
             </div>
             
-            <div class="modal-body">
-                <form id="registrationForm">
-                    <div class="form-step active" id="step1">
-                        <h3>Choose Your Plan</h3>
-                        <div class="plan-options">
-                            <div class="plan-option" onclick="selectPlanOption('warrior')">
-                                <h4>Warrior</h4>
-                                <div class="price">$29<span>/month</span></div>
-                                <p>Basic access</p>
-                            </div>
-                            <div class="plan-option popular" onclick="selectPlanOption('champion')">
-                                <h4>Champion</h4>
-                                <div class="price">$49<span>/month</span></div>
-                                <p>Most popular</p>
-                            </div>
-                            <div class="plan-option" onclick="selectPlanOption('legend')">
-                                <h4>Legend</h4>
-                                <div class="price">$79<span>/month</span></div>
-                                <p>Premium experience</p>
-                            </div>
+            <form class="contact-form" id="contactForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Your Email" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="text" placeholder="Subject" required>
+                </div>
+                <div class="form-group">
+                    <textarea placeholder="Your Message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Message
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Registration Modal -->
+    <!-- Registration Modal -->
+<div class="modal-overlay" id="membershipModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>Join the Conquer Community</h2>
+            <button class="modal-close" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <form id="registrationForm">
+                <div class="form-step active" id="step1">
+                    <h3>Choose Your Plan</h3>
+                    <div class="plan-options">
+                        <div class="plan-option" onclick="selectPlanOption('warrior')">
+                            <h4>Warrior</h4>
+                            <div class="price">$29<span>/month</span></div>
+                            <p>Basic access</p>
                         </div>
-                        
+                        <div class="plan-option popular" onclick="selectPlanOption('champion')">
+                            <h4>Champion</h4>
+                            <div class="price">$49<span>/month</span></div>
+                            <p>Most popular</p>
+                        </div>
+                        <div class="plan-option" onclick="selectPlanOption('legend')">
+                            <h4>Legend</h4>
+                            <div class="price">$79<span>/month</span></div>
+                            <p>Premium experience</p>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn-next" onclick="nextStep()">
+                        Next: Personal Details
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+                
+                <div class="form-step" id="step2">
+                    <h3>Personal Information</h3>
+                    <div class="form-group">
+                        <input type="text" name="name" placeholder="Full Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" name="phone" placeholder="Phone Number">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-back" onclick="prevStep()">
+                            <i class="fas fa-arrow-left"></i>
+                            Back
+                        </button>
                         <button type="button" class="btn-next" onclick="nextStep()">
-                            Next: Personal Details
+                            Next: Account Setup
                             <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
-                    
-                    <div class="form-step" id="step2">
-                        <h3>Personal Information</h3>
-                        <div class="form-group">
-                            <input type="text" placeholder="Full Name" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" placeholder="Email Address" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="tel" placeholder="Phone Number">
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn-back" onclick="prevStep()">
-                                <i class="fas fa-arrow-left"></i>
-                                Back
-                            </button>
-                            <button type="button" class="btn-next" onclick="nextStep()">
-                                Next: Account Setup
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-step" id="step3">
-                        <h3>Account Setup</h3>
-                        <div class="form-group">
-                            <input type="password" placeholder="Create Password" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="password" placeholder="Confirm Password" required>
-                        </div>
-                        
-                        <div class="form-check">
-                            <input type="checkbox" id="terms" required>
-                            <label for="terms">
-                                I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
-                            </label>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn-back" onclick="prevStep()">
-                                <i class="fas fa-arrow-left"></i>
-                                Back
-                            </button>
-                            <button type="submit" class="btn-submit">
-                                <i class="fas fa-check-circle"></i>
-                                Complete Registration
-                            </button>
-                        </div>
-                    </div>
-                </form>
-                
-                <div class="progress-bar">
-                    <div class="progress-step active" data-step="1"></div>
-                    <div class="progress-step" data-step="2"></div>
-                    <div class="progress-step" data-step="3"></div>
                 </div>
+                
+                <div class="form-step" id="step3">
+                    <h3>Account Setup</h3>
+                    <div class="form-group">
+                        <input type="password" name="password" placeholder="Create Password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                    </div>
+                    
+                    <div class="form-check">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">
+                            I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-back" onclick="prevStep()">
+                            <i class="fas fa-arrow-left"></i>
+                            Back
+                        </button>
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-check-circle"></i>
+                            Complete Registration
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1"></div>
+                <div class="progress-step" data-step="2"></div>
+                <div class="progress-step" data-step="3"></div>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -527,24 +592,24 @@
             <div class="footer-links">
                 <div class="link-group">
                     <h4>Membership</h4>
-                    <a href="#">Plans & Pricing</a>
-                    <a href="#">Free Trial</a>
-                    <a href="#">Corporate Plans</a>
-                    <a href="#">Student Discount</a>
+                    <a href="#memberships">Plans & Pricing</a>
+                    <a href="#" onclick="openMembershipModal()">Free Trial</a>
+                    <a href="#contact">Corporate Plans</a>
+                    <a href="#contact">Student Discount</a>
                 </div>
                 
                 <div class="link-group">
                     <h4>Facilities</h4>
-                    <a href="#">Equipment</a>
-                    <a href="#">Classes Schedule</a>
-                    <a href="#">Personal Training</a>
-                    <a href="#">Recovery Center</a>
+                    <a href="#facilities">Equipment</a>
+                    <a href="#contact">Classes Schedule</a>
+                    <a href="#trainers">Personal Training</a>
+                    <a href="#facilities">Recovery Center</a>
                 </div>
                 
                 <div class="link-group">
                     <h4>Company</h4>
-                    <a href="#">About Us</a>
-                    <a href="#">Careers</a>
+                    <a href="about.php">About Us</a>
+                    <a href="#contact">Careers</a>
                     <a href="#">Privacy Policy</a>
                     <a href="#">Terms of Service</a>
                 </div>
@@ -572,7 +637,7 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-    <script src="script.js"></script>
+    <script src="main.js"></script>
     
     <script>
         // Initialize AOS
@@ -591,6 +656,24 @@
                 }, 500);
             }, 1000);
         });
+        
+        // Contact form submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for your message! We will get back to you soon.');
+            this.reset();
+        });
+        
+        // Scroll to section function
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                window.scrollTo({
+                    top: section.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        }
     </script>
 </body>
 </html>

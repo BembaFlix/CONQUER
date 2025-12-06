@@ -69,7 +69,7 @@ CREATE TABLE classes (
     current_enrollment INT DEFAULT 0,
     class_type ENUM('yoga', 'hiit', 'strength', 'cardio', 'crossfit', 'others'),
     difficulty_level ENUM('beginner', 'intermediate', 'advanced'),
-    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE SET NULL
+    FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE SET NULL,
 );
 
 -- Bookings table

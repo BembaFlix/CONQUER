@@ -1,4 +1,4 @@
-
+// main.js - Complete with all fixes
 // Theme Toggle
 const themeSwitch = document.getElementById('theme-switch');
 const htmlElement = document.documentElement;
@@ -24,16 +24,18 @@ themeSwitch.addEventListener('change', function() {
 const navToggle = document.querySelector('.nav-toggle');
 const navMenu = document.querySelector('.nav-menu');
 
-navToggle.addEventListener('click', () => {
-    navMenu.classList.toggle('active');
-    navToggle.classList.toggle('active');
-});
+if (navToggle && navMenu) {
+    navToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+        navToggle.classList.toggle('active');
+    });
+}
 
 // Close mobile menu when clicking on a link
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        navToggle.classList.remove('active');
+        if (navMenu) navMenu.classList.remove('active');
+        if (navToggle) navToggle.classList.remove('active');
     });
 });
 
@@ -89,32 +91,40 @@ if (heroStats) observer.observe(heroStats);
 // Back to Top Button
 const backToTop = document.querySelector('.back-to-top');
 
-window.addEventListener('scroll', () => {
-    if (window.pageYOffset > 300) {
-        backToTop.classList.add('visible');
-    } else {
-        backToTop.classList.remove('visible');
-    }
-});
-
-backToTop.addEventListener('click', () => {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
+if (backToTop) {
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
     });
-});
+
+    backToTop.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
 
 // Modal Functions
 let currentStep = 1;
 let selectedPlan = '';
 
 function openMembershipModal() {
-    document.getElementById('membershipModal').style.display = 'flex';
-    resetForm();
+    const modal = document.getElementById('membershipModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        resetForm();
+    }
 }
 
 function closeModal() {
-    document.getElementById('membershipModal').style.display = 'none';
+    const modal = document.getElementById('membershipModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 
 function selectPlan(plan) {
@@ -165,90 +175,126 @@ function resetForm() {
     document.querySelectorAll('.form-step').forEach(step => {
         step.classList.remove('active');
     });
-    document.getElementById('step1').classList.add('active');
+    const step1 = document.getElementById('step1');
+    if (step1) step1.classList.add('active');
     document.querySelectorAll('.plan-option').forEach(option => {
         option.classList.remove('selected');
     });
     document.querySelectorAll('.progress-step').forEach(step => {
         step.classList.remove('active');
     });
-    document.querySelector('.progress-step[data-step="1"]').classList.add('active');
-    document.getElementById('registrationForm').reset();
+    const firstProgressStep = document.querySelector('.progress-step[data-step="1"]');
+    if (firstProgressStep) firstProgressStep.classList.add('active');
+    const registrationForm = document.getElementById('registrationForm');
+    if (registrationForm) registrationForm.reset();
 }
 
 // Form Submission
-document.getElementById('registrationForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    // Get form data
-    const formData = new FormData(this);
-    const data = {
-        plan: selectedPlan,
-        name: formData.get('name'),
-        email: formData.get('email'),
-        phone: formData.get('phone')
-    };
-    
-    // Simulate API call
-    setTimeout(() => {
-        alert(`Registration successful!\nWelcome to Conquer Gym!\nPlan: ${selectedPlan}\nName: ${data.name}`);
-        closeModal();
-        resetForm();
-    }, 1000);
-});
+const registrationForm = document.getElementById('registrationForm');
+if (registrationForm) {
+    registrationForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get form data
+        const formData = new FormData(this);
+        const data = {
+            plan: selectedPlan,
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('phone')
+        };
+        
+        // Simulate API call
+        setTimeout(() => {
+            alert(`Registration successful!\nWelcome to Conquer Gym!\nPlan: ${selectedPlan}\nName: ${data.name}`);
+            closeModal();
+            resetForm();
+        }, 1000);
+    });
+}
 
 // Close modal when clicking outside
-document.getElementById('membershipModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeModal();
-    }
-});
+const membershipModal = document.getElementById('membershipModal');
+if (membershipModal) {
+    membershipModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+}
 
 // Initialize AOS
-AOS.init({
-    duration: 1000,
-    once: true,
-    offset: 100
-});
+if (typeof AOS !== 'undefined') {
+    AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100
+    });
+}
 
 // Hide loading screen
 window.addEventListener('load', function() {
-    setTimeout(() => {
-        document.querySelector('.loading-screen').style.opacity = '0';
+    const loadingScreen = document.querySelector('.loading-screen');
+    if (loadingScreen) {
         setTimeout(() => {
-            document.querySelector('.loading-screen').style.display = 'none';
-        }, 500);
-    }, 1000);
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }, 1000);
+    }
 });
 
-// Navigation scroll effect
+// Navigation scroll effect - FIXED for dark mode
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    
+    const isDarkMode = htmlElement.getAttribute('data-theme') === 'dark';
+    
     if (window.scrollY > 100) {
-        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+        if (isDarkMode) {
+            navbar.style.background = 'rgba(30, 39, 46, 0.98)';
+        } else {
+            navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+        }
         navbar.style.boxShadow = 'var(--shadow-md)';
     } else {
-        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+        if (isDarkMode) {
+            navbar.style.background = 'rgba(30, 39, 46, 0.95)';
+        } else {
+            navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+        }
         navbar.style.boxShadow = 'var(--shadow-sm)';
     }
 });
 
 // Dark mode adjustments for navbar
-themeSwitch.addEventListener('change', function() {
-    const navbar = document.querySelector('.navbar');
-    if (this.checked) {
-        navbar.style.background = 'rgba(30, 39, 46, 0.98)';
-    } else {
-        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-    }
-});
+if (themeSwitch) {
+    themeSwitch.addEventListener('change', function() {
+        const navbar = document.querySelector('.navbar');
+        if (!navbar) return;
+        
+        if (this.checked) {
+            navbar.style.background = 'rgba(30, 39, 46, 0.98)';
+        } else {
+            navbar.style.background = 'rgba(255, 255, 255, 0.98)';
+        }
+    });
+}
 
 // Login button functionality
-document.querySelector('.btn-login').addEventListener('click', function() {
-    alert('Login functionality would open here!');
-});
+const loginBtn = document.querySelector('.btn-login:not([onclick])');
+if (loginBtn) {
+    loginBtn.addEventListener('click', function() {
+        alert('Login functionality would open here!');
+    });
+}
 
 // Join Now button functionality
-document.querySelector('.btn-join').addEventListener('click', function() {
-    openMembershipModal();
-});
+const joinBtn = document.querySelector('.btn-join');
+if (joinBtn) {
+    joinBtn.addEventListener('click', function() {
+        openMembershipModal();
+    });
+}

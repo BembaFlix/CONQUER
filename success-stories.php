@@ -1,46 +1,5 @@
 <?php
 session_start();
-require_once 'config/database.php';
-
-try {
-    // Fetch featured story
-    $featuredStmt = $pdo->query("
-        SELECT ss.*, u.full_name, u.username, t.specialty as trainer_specialty
-        FROM success_stories ss
-        LEFT JOIN users u ON ss.user_id = u.id
-        LEFT JOIN trainers tr ON ss.trainer_id = tr.id
-        LEFT JOIN users t ON tr.user_id = t.id
-        WHERE ss.is_featured = TRUE AND ss.approved = TRUE
-        ORDER BY ss.created_at DESC
-        LIMIT 1
-    ");
-    $featuredStory = $featuredStmt->fetch();
-    
-    // Fetch all stories
-    $storiesStmt = $pdo->query("
-        SELECT ss.*, u.full_name, u.username
-        FROM success_stories ss
-        LEFT JOIN users u ON ss.user_id = u.id
-        WHERE ss.approved = TRUE
-        ORDER BY ss.created_at DESC
-        LIMIT 6
-    ");
-    $stories = $storiesStmt->fetchAll();
-    
-    // Get stats
-    $statsStmt = $pdo->query("
-        SELECT 
-            COUNT(*) as total_stories,
-            AVG(weight_loss) as avg_weight_loss,
-            AVG(months_taken) as avg_months
-        FROM success_stories 
-        WHERE approved = TRUE
-    ");
-    $stats = $statsStmt->fetch();
-    
-} catch(PDOException $e) {
-    $error = "Database error: " . $e->getMessage();
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -131,15 +90,15 @@ try {
             
             <div class="stats-banner">
                 <div class="story-stat">
-                    <span class="story-stat-number"><?php echo $stats ? number_format($stats['total_stories']) : '100+'; ?></span>
+                    <span class="story-stat-number">100+</span>
                     <span class="story-stat-label">Transformations</span>
                 </div>
                 <div class="story-stat">
-                    <span class="story-stat-number"><?php echo $stats ? round($stats['avg_weight_loss'], 1) : '25'; ?>kg</span>
+                    <span class="story-stat-number">25kg</span>
                     <span class="story-stat-label">Average Weight Loss</span>
                 </div>
                 <div class="story-stat">
-                    <span class="story-stat-number"><?php echo $stats ? round($stats['avg_months']) : '6'; ?> mo</span>
+                    <span class="story-stat-number">6 mo</span>
                     <span class="story-stat-label">Average Duration</span>
                 </div>
             </div>
@@ -162,54 +121,50 @@ try {
     </section>
 
     <!-- Featured Story -->
-    <?php if($featuredStory): ?>
     <section class="featured-story">
         <div class="featured-container">
             <div class="featured-images" data-aos="fade-right">
                 <div class="before-after">
                     <div class="before-box">
-                        <img src="<?php echo $featuredStory['before_image'] ?: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'; ?>" alt="Before Transformation">
+                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Before Transformation">
                     </div>
                     <div class="after-box">
-                        <img src="<?php echo $featuredStory['after_image'] ?: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'; ?>" alt="After Transformation">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="After Transformation">
                     </div>
                 </div>
             </div>
             
             <div class="featured-content" data-aos="fade-left">
-                <h2><?php echo htmlspecialchars($featuredStory['title']); ?></h2>
+                <h2>From 120kg to 80kg: My Journey to Health</h2>
                 
                 <div class="story-meta">
                     <div class="meta-item">
                         <i class="fas fa-user"></i>
-                        <span><?php echo htmlspecialchars($featuredStory['full_name'] ?: 'Anonymous Member'); ?></span>
+                        <span>John Doe</span>
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-weight"></i>
-                        <span><?php echo $featuredStory['weight_loss'] ? $featuredStory['weight_loss'] . ' kg lost' : 'Significant Transformation'; ?></span>
+                        <span>40 kg lost</span>
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-clock"></i>
-                        <span><?php echo $featuredStory['months_taken'] ? $featuredStory['months_taken'] . ' months' : 'Ongoing Journey'; ?></span>
+                        <span>8 months journey</span>
                     </div>
                 </div>
                 
-                <p><?php echo nl2br(htmlspecialchars(substr($featuredStory['story_text'], 0, 300) . '...')); ?></p>
+                <p>"I never thought I could lose weight and gain confidence. CONQUER Gym changed my life completely. With the help of expert trainers and a supportive community, I transformed not just my body but my entire lifestyle..."</p>
                 
                 <div class="story-quote">
                     "The CONQUER community changed my life. Never thought I could achieve this!"
                 </div>
                 
-                <?php if($featuredStory['trainer_specialty']): ?>
-                    <div class="trainer-mention">
-                        <i class="fas fa-trophy"></i>
-                        <span>Guided by <?php echo htmlspecialchars($featuredStory['trainer_specialty']); ?> trainer</span>
-                    </div>
-                <?php endif; ?>
+                <div class="trainer-mention">
+                    <i class="fas fa-trophy"></i>
+                    <span>Guided by Strength & Conditioning trainer</span>
+                </div>
             </div>
         </div>
     </section>
-    <?php endif; ?>
 
     <!-- Stories Grid -->
     <section class="stories-grid-section">
@@ -219,25 +174,22 @@ try {
         </div>
         
         <div class="stories-grid">
-            <?php foreach($stories as $story): ?>
             <div class="story-card" data-aos="fade-up">
                 <div class="story-images">
                     <div class="story-before">
-                        <img src="<?php echo $story['before_image'] ?: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'; ?>" alt="Before">
+                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Before">
                     </div>
                     <div class="story-after">
-                        <img src="<?php echo $story['after_image'] ?: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'; ?>" alt="After">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="After">
                     </div>
                 </div>
                 <div class="story-content">
-                    <h3><?php echo htmlspecialchars($story['title']); ?></h3>
-                    <p class="story-duration"><?php echo $story['months_taken'] ? $story['months_taken'] . ' month journey' : 'Ongoing Transformation'; ?></p>
-                    <p class="story-excerpt"><?php echo nl2br(htmlspecialchars(substr($story['story_text'], 0, 150) . '...')); ?></p>
+                    <h3>Strength Gained, Confidence Restored</h3>
+                    <p class="story-duration">6 month journey</p>
+                    <p class="story-excerpt">After a serious injury, I thought I'd never be active again. CONQUER's rehabilitation program helped me regain strength and confidence...</p>
                     
                     <div class="story-stats">
-                        <?php if($story['weight_loss']): ?>
-                        <span class="stat-badge loss">-<?php echo $story['weight_loss']; ?> kg</span>
-                        <?php endif; ?>
+                        <span class="stat-badge loss">-15 kg</span>
                         <span class="stat-badge trainer">With Trainer</span>
                     </div>
                     
@@ -247,13 +199,58 @@ try {
                     </a>
                 </div>
             </div>
-            <?php endforeach; ?>
             
-            <?php if(empty($stories)): ?>
-                <p style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--gray);">
-                    No success stories available yet. Check back soon!
-                </p>
-            <?php endif; ?>
+            <div class="story-card" data-aos="fade-up">
+                <div class="story-images">
+                    <div class="story-before">
+                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Before">
+                    </div>
+                    <div class="story-after">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="After">
+                    </div>
+                </div>
+                <div class="story-content">
+                    <h3>Yoga Journey to Inner Peace</h3>
+                    <p class="story-duration">4 month journey</p>
+                    <p class="story-excerpt">Struggling with stress and anxiety, I found solace in CONQUER's yoga classes. The transformation has been mental as much as physical...</p>
+                    
+                    <div class="story-stats">
+                        <span class="stat-badge loss">-10 kg</span>
+                        <span class="stat-badge trainer">With Trainer</span>
+                    </div>
+                    
+                    <a href="#" class="read-more">
+                        Read Full Story
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="story-card" data-aos="fade-up">
+                <div class="story-images">
+                    <div class="story-before">
+                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Before">
+                    </div>
+                    <div class="story-after">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="After">
+                    </div>
+                </div>
+                <div class="story-content">
+                    <h3>Building Muscle at 50</h3>
+                    <p class="story-duration">12 month journey</p>
+                    <p class="story-excerpt">Age is just a number! At 50, I've never felt stronger or more energetic. The trainers created a perfect program for my age and goals...</p>
+                    
+                    <div class="story-stats">
+                        <span class="stat-badge loss">+8kg muscle</span>
+                        <span class="stat-badge trainer">With Trainer</span>
+                    </div>
+                    
+                    <a href="#" class="read-more">
+                        Read Full Story
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -297,8 +294,168 @@ try {
         </div>
     </section>
 
-    <!-- Footer (Same as index.html) -->
-    <?php include 'footer.php'; ?>
+    <!-- Registration Modal -->
+    <div class="modal-overlay" id="membershipModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Join the Conquer Community</h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="registrationForm">
+                    <div class="form-step active" id="step1">
+                        <h3>Choose Your Plan</h3>
+                        <div class="plan-options">
+                            <div class="plan-option" onclick="selectPlanOption('warrior')">
+                                <h4>Warrior</h4>
+                                <div class="price">$29<span>/month</span></div>
+                                <p>Basic access</p>
+                            </div>
+                            <div class="plan-option popular" onclick="selectPlanOption('champion')">
+                                <h4>Champion</h4>
+                                <div class="price">$49<span>/month</span></div>
+                                <p>Most popular</p>
+                            </div>
+                            <div class="plan-option" onclick="selectPlanOption('legend')">
+                                <h4>Legend</h4>
+                                <div class="price">$79<span>/month</span></div>
+                                <p>Premium experience</p>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn-next" onclick="nextStep()">
+                            Next: Personal Details
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="form-step" id="step2">
+                        <h3>Personal Information</h3>
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="Full Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" name="phone" placeholder="Phone Number">
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-back" onclick="prevStep()">
+                                <i class="fas fa-arrow-left"></i>
+                                Back
+                            </button>
+                            <button type="button" class="btn-next" onclick="nextStep()">
+                                Next: Account Setup
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-step" id="step3">
+                        <h3>Account Setup</h3>
+                        <div class="form-group">
+                            <input type="password" name="password" placeholder="Create Password" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <label for="terms">
+                                I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn-back" onclick="prevStep()">
+                                <i class="fas fa-arrow-left"></i>
+                                Back
+                            </button>
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-check-circle"></i>
+                                Complete Registration
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="progress-bar">
+                    <div class="progress-step active" data-step="1"></div>
+                    <div class="progress-step" data-step="2"></div>
+                    <div class="progress-step" data-step="3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <i class="fas fa-dumbbell"></i>
+                    <span>CONQUER</span>
+                </div>
+                <p>Redefining fitness limits since 2010</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <div class="link-group">
+                    <h4>Membership</h4>
+                    <a href="index.html#memberships">Plans & Pricing</a>
+                    <a href="#" onclick="openMembershipModal()">Free Trial</a>
+                    <a href="index.html#contact">Corporate Plans</a>
+                    <a href="index.html#contact">Student Discount</a>
+                </div>
+                
+                <div class="link-group">
+                    <h4>Facilities</h4>
+                    <a href="index.html#facilities">Equipment</a>
+                    <a href="index.html#contact">Classes Schedule</a>
+                    <a href="index.html#trainers">Personal Training</a>
+                    <a href="index.html#facilities">Recovery Center</a>
+                </div>
+                
+                <div class="link-group">
+                    <h4>Company</h4>
+                    <a href="about.php">About Us</a>
+                    <a href="index.html#contact">Careers</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+            
+            <div class="footer-contact">
+                <h4>Contact Us</h4>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Fitness Street, Cityville</p>
+                <p><i class="fas fa-phone"></i> (555) 123-4567</p>
+                <p><i class="fas fa-envelope"></i> info@conquergym.com</p>
+                <p><i class="fas fa-clock"></i> Open 24/7 for Elite Members</p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 Conquer Gym. All rights reserved. | Made with <i class="fas fa-heart"></i> for fitness warriors</p>
+        </div>
+    </footer>
+
+    <!-- Back to Top -->
+    <button class="back-to-top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
 
     <!-- Scripts -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -321,6 +478,14 @@ try {
             // Here you would normally make an AJAX request or filter client-side
             console.log('Filtering by:', category);
         }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('membershipModal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
