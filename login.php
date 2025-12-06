@@ -60,7 +60,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="login-style.css">
+    <link rel="stylesheet" href="login-styles.css">
+    <link rel="stylesheet" href="index-style.css">
 </head>
 <body>
     <div class="login-container">

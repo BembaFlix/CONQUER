@@ -24,6 +24,7 @@ session_start();
     
     <!-- CSS -->
     <link rel="stylesheet" href="about-style.css">
+    <link rel="stylesheet" href="index-style.css">
 </head>
 <body>
     <!-- Theme Toggle -->
