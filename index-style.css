@@ -1365,3 +1365,672 @@ html {
         grid-template-columns: 1fr;
     }
 }
+/* ===== SIDEBAR NAVIGATION ===== */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 350px;
+    height: 100vh;
+    background: var(--white);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    transition: var(--transition-slow);
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+[data-theme="dark"] .sidebar {
+    background: var(--dark-color);
+}
+
+.sidebar.active {
+    right: 0;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light-color);
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.sidebar-logo i {
+    background: var(--gradient-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transform: rotate(-15deg);
+}
+
+.sidebar-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--gray);
+    cursor: pointer;
+    transition: var(--transition);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.sidebar-close:hover {
+    background: var(--light-color);
+    color: var(--primary-color);
+    transform: rotate(90deg);
+}
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--light-color);
+    border-radius: var(--radius-md);
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+    color: var(--dark-color);
+}
+
+.user-info p {
+    font-size: 0.9rem;
+    color: var(--gray);
+}
+
+.sidebar-menu {
+    margin-bottom: 2rem;
+}
+
+.sidebar-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--light-color);
+}
+
+.sidebar-nav {
+    list-style: none;
+}
+
+.sidebar-nav li {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    color: var(--dark-color);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+[data-theme="dark"] .sidebar-nav a {
+    color: var(--white);
+}
+
+.sidebar-nav a:hover {
+    background: var(--light-color);
+    color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+.sidebar-nav a.active {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.sidebar-nav a i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.sidebar-actions {
+    margin-top: 2rem;
+}
+
+.sidebar-btn {
+    width: 100%;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+}
+
+.sidebar-btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: var(--shadow-primary);
+}
+
+.sidebar-btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+}
+
+.sidebar-btn-secondary {
+    background: transparent;
+    border: 2px solid var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+.sidebar-btn-secondary:hover {
+    background: var(--secondary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.sidebar-btn-logout {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.sidebar-btn-logout:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.sidebar-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--light-color);
+    text-align: center;
+}
+
+.sidebar-footer p {
+    color: var(--gray);
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-social {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.sidebar-social a {
+    width: 36px;
+    height: 36px;
+    background: var(--light-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+[data-theme="dark"] .sidebar-social a {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.sidebar-social a:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 100;
+    background: var(--gradient-primary);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-primary);
+    transition: var(--transition);
+}
+
+.sidebar-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+}
+
+.sidebar-toggle i {
+    color: white;
+    font-size: 1.25rem;
+}
+
+/* Update main navigation to hide user actions */
+.nav-actions {
+    display: none; /* Hide from main nav since we're moving to sidebar */
+}
+
+/* Responsive Sidebar */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .sidebar.active {
+        right: 0;
+    }
+    
+    .sidebar-toggle {
+        top: 20px;
+        right: 20px;
+    }
+}
+
+/* Show nav actions on large screens if needed */
+@media (min-width: 1200px) {
+    .nav-actions {
+        display: flex; /* Keep on large screens if desired */
+    }
+    .sidebar-toggle {
+        display: none; /* Hide toggle on large screens if using main nav */
+    }
+}
+/* ===== SIDEBAR BUTTON IN NAVBAR ===== */
+.sidebar-btn-nav {
+    background: var(--gradient-primary);
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    box-shadow: var(--shadow-primary);
+    margin-left: 1rem;
+}
+
+.sidebar-btn-nav:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+}
+
+.sidebar-btn-nav i {
+    color: white;
+    font-size: 1.1rem;
+}
+
+/* Make sure nav-actions are visible on large screens */
+@media (min-width: 769px) {
+    .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .sidebar-btn-nav {
+        display: none; /* Hide from desktop nav since we have full buttons */
+    }
+}
+
+/* On mobile, show sidebar button and hide original buttons */
+@media (max-width: 768px) {
+    .nav-actions .btn-login,
+    .nav-actions .btn-primary {
+        display: none;
+    }
+    
+    .sidebar-btn-nav {
+        display: flex;
+    }
+    
+    /* Adjust hamburger menu position */
+    .nav-toggle {
+        margin-right: 0.5rem;
+    }
+}
+/* ===== MODAL FORM STYLES ===== */
+.form-step {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.form-step.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.plan-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.plan-option {
+    padding: 1.5rem;
+    border: 2px solid var(--light-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.plan-option:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+.plan-option.selected {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, rgba(255, 71, 87, 0.1) 0%, rgba(255, 107, 129, 0.1) 100%);
+}
+
+.plan-option.popular {
+    border-color: var(--primary-color);
+}
+
+.plan-option .price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin: 0.5rem 0;
+}
+
+.plan-option .price span {
+    font-size: 1rem;
+    color: var(--gray);
+    font-weight: 400;
+}
+
+.btn-next, .btn-back, .btn-submit {
+    width: 100%;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-next {
+    background: var(--gradient-primary);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-primary);
+}
+
+.btn-back {
+    background: transparent;
+    border: 2px solid var(--gray);
+    color: var(--gray);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-back:hover {
+    border-color: var(--dark-color);
+    color: var(--dark-color);
+}
+
+.btn-submit {
+    background: var(--gradient-primary);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-primary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.form-check input[type="checkbox"] {
+    width: auto;
+}
+
+.form-check label {
+    font-size: 0.9rem;
+    color: var(--gray);
+}
+
+.form-check a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.progress-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.progress-step {
+    width: 30px;
+    height: 4px;
+    background: var(--light-color);
+    border-radius: 2px;
+    transition: var(--transition);
+}
+
+.progress-step.active {
+    background: var(--primary-color);
+    width: 40px;
+}
+/* ===== SIDEBAR TOGGLE BUTTON FIXES ===== */
+
+/* Show sidebar toggle button by default */
+.sidebar-toggle {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 1000; /* Increased z-index to be above navbar */
+    background: var(--gradient-primary);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-primary);
+    transition: var(--transition);
+}
+
+.sidebar-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+}
+
+.sidebar-toggle i {
+    color: white;
+    font-size: 1.25rem;
+}
+
+/* Update theme toggle position to accommodate sidebar button */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 85px; /* Move theme toggle left to make space for sidebar button */
+    z-index: 1000;
+}
+
+/* Adjust navbar container for the sidebar button */
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 100px 0 2rem; /* Add right padding for the button */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+}
+
+/* Make sure nav actions show properly */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar-toggle {
+        top: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .theme-toggle {
+        right: 75px;
+        top: 22px;
+    }
+    
+    .switch {
+        width: 60px;
+        height: 30px;
+    }
+    
+    .nav-container {
+        padding: 0 80px 0 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-toggle {
+        width: 40px;
+        height: 40px;
+        top: 15px;
+        right: 15px;
+    }
+    
+    .theme-toggle {
+        right: 65px;
+        top: 17px;
+    }
+    
+    .switch {
+        width: 50px;
+        height: 25px;
+    }
+    
+    .switch i {
+        font-size: 12px;
+    }
+}
+
+/* Make sure button is visible and not hidden by other elements */
+button.sidebar-toggle {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}

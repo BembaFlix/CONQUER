@@ -155,25 +155,25 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </form>
                 
                 <div class="form-footer">
-                    <p>Don't have an account? <a href="register.php">Sign up now</a></p>
-                    <div class="divider">
-                        <span>or continue with</span>
-                    </div>
-                    <div class="social-login">
-                        <button class="social-btn google">
-                            <i class="fab fa-google"></i>
-                            Google
-                        </button>
-                        <button class="social-btn facebook">
-                            <i class="fab fa-facebook"></i>
-                            Facebook
-                        </button>
-                    </div>
-                    <a href="index.html" class="back-home">
-                        <i class="fas fa-arrow-left"></i>
-                        Back to Home
-                    </a>
-                </div>
+    <p>Don't have an account? <a href="register.php">Sign up now</a></p>
+    <div class="divider">
+        <span>or continue with</span>
+    </div>
+    <div class="social-login">
+        <button type="button" class="social-btn google" onclick="socialLogin('google')">
+            <i class="fab fa-google"></i>
+            Google
+        </button>
+        <button type="button" class="social-btn facebook" onclick="socialLogin('facebook')">
+            <i class="fab fa-facebook"></i>
+            Facebook
+        </button>
+    </div>
+    <a href="index.html" class="back-home">
+        <i class="fas fa-arrow-left"></i>
+        Back to Home
+    </a>
+</div>  
             </div>
         </div>
     </div>

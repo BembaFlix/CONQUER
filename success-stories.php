@@ -24,6 +24,62 @@ session_start();
     <link rel="stylesheet" href="success-stories.css">
 </head>
 <body>
+ <!-- Navigation -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="nav-logo">
+            <div class="logo-icon">
+                <i class="fas fa-dumbbell"></i>
+            </div>
+            <span class="logo-text">CONQUER</span>
+        </a>
+        
+        <div class="nav-menu">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
+                <li class="nav-item"><a href="about.php" class="nav-link active">About</a></li>
+                <li class="nav-item"><a href="index.html#memberships" class="nav-link">Memberships</a></li>
+                <li class="nav-item"><a href="index.html#trainers" class="nav-link">Trainers</a></li>
+                <li class="nav-item"><a href="index.html#facilities" class="nav-link">Facilities</a></li>
+                <li class="nav-item"><a href="success-stories.php" class="nav-link">Success Stories</a></li>
+                <li class="nav-item"><a href="index.html#contact" class="nav-link">Contact</a></li>
+            </ul>
+            
+            <div class="nav-actions">
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <!-- Desktop buttons for logged in users -->
+                    <button class="btn-login" onclick="window.location.href='dashboard.php'">
+                        <i class="fas fa-user-circle"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button class="btn-login" onclick="window.location.href='logout.php'">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                <?php else: ?>
+                    <!-- Desktop buttons for guests -->
+                    <button class="btn-login" onclick="window.location.href='login.php'">
+                        <i class="fas fa-user"></i>
+                        <span>Login</span>
+                    </button>
+                    <button class="btn-primary btn-join" onclick="openMembershipModal()">
+                        <span>Join Now</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                <?php endif; ?>
+                
+                <!-- Sidebar toggle button for mobile -->
+                <button class="sidebar-btn-nav" onclick="toggleSidebar()">
+                    <i class="fas fa-user-circle"></i>
+                </button>
+            </div>
+        </div>
+        
+        <button class="nav-toggle">
+            <span class="hamburger"></span>
+        </button>
+    </div>
+</nav>
     <!-- Theme Toggle -->
     <div class="theme-toggle">
         <input type="checkbox" id="theme-switch" class="checkbox">
@@ -55,23 +111,27 @@ session_start();
                     <li class="nav-item"><a href="index.html#contact" class="nav-link">Contact</a></li>
                 </ul>
                 
-                <div class="nav-actions">
-                    <?php if(isset($_SESSION['user_id'])): ?>
-                        <button class="btn-login" onclick="window.location.href='logout.php'">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </button>
-                    <?php else: ?>
-                        <button class="btn-login" onclick="window.location.href='login.php'">
-                            <i class="fas fa-user"></i>
-                            <span>Login</span>
-                        </button>
-                    <?php endif; ?>
-                    <button class="btn-primary btn-join" onclick="openMembershipModal()">
-                        <span>Join Now</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
+               <div class="nav-actions">
+    <?php if(isset($_SESSION['user_id'])): ?>
+        <button class="btn-login" onclick="window.location.href='dashboard.php'">
+            <i class="fas fa-user-circle"></i>
+            <span>Dashboard</span>
+        </button>
+        <button class="btn-login" onclick="window.location.href='logout.php'">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+        </button>
+    <?php else: ?>
+        <button class="btn-login" onclick="window.location.href='login.php'">
+            <i class="fas fa-user"></i>
+            <span>Login</span>
+        </button>
+    <?php endif; ?>
+    <button class="btn-primary btn-join" onclick="openMembershipModal()">
+        <span>Join Now</span>
+        <i class="fas fa-arrow-right"></i>
+    </button>
+</div>
             </div>
             
             <button class="nav-toggle">

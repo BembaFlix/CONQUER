@@ -1,4 +1,5 @@
-// main.js - Complete with all fixes
+// main.js - Fixed sidebar functionality
+
 // Theme Toggle
 const themeSwitch = document.getElementById('theme-switch');
 const htmlElement = document.documentElement;
@@ -54,6 +55,119 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             });
         }
     });
+});
+
+// Sidebar Functions
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        
+        // Prevent body scrolling when sidebar is open
+        if (sidebar.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+// Update sidebar user info
+function updateSidebarUserInfo() {
+    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    const userName = localStorage.getItem('userName') || 'Guest User';
+    
+    // Update sidebar content if it exists
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    
+    const userAvatar = document.getElementById('user-avatar');
+    const userNameElement = document.getElementById('user-name');
+    const userStatusElement = document.getElementById('user-status');
+    const sidebarActions = document.getElementById('sidebar-actions');
+    
+    if (userAvatar && userNameElement && userStatusElement && sidebarActions) {
+        if (isLoggedIn) {
+            // User is logged in
+            userAvatar.textContent = userName.charAt(0).toUpperCase();
+            userNameElement.textContent = userName;
+            userStatusElement.textContent = 'Premium Member';
+            userAvatar.style.background = 'var(--gradient-primary)';
+            
+            // Show logged-in actions
+            sidebarActions.innerHTML = `
+                <button class="sidebar-btn sidebar-btn-primary" onclick="window.location.href='dashboard.php'; toggleSidebar();">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </button>
+                <button class="sidebar-btn sidebar-btn-secondary" onclick="window.location.href='profile.php'; toggleSidebar();">
+                    <i class="fas fa-user-edit"></i>
+                    Edit Profile
+                </button>
+                <button class="sidebar-btn sidebar-btn-logout" onclick="logout(); toggleSidebar();">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            `;
+        } else {
+            // User is not logged in
+            userAvatar.textContent = 'G';
+            userNameElement.textContent = 'Guest User';
+            userStatusElement.textContent = 'Not logged in';
+            userAvatar.style.background = 'var(--gradient-dark)';
+            
+            // Show login/register actions
+            sidebarActions.innerHTML = `
+                <button class="sidebar-btn sidebar-btn-primary" onclick="window.location.href='login.php'; toggleSidebar();">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </button>
+                <button class="sidebar-btn sidebar-btn-secondary" onclick="window.location.href='register.php'; toggleSidebar();">
+                    <i class="fas fa-user-plus"></i>
+                    Sign Up
+                </button>
+                <button class="sidebar-btn sidebar-btn-primary" onclick="openMembershipModal(); toggleSidebar();">
+                    <i class="fas fa-fire"></i>
+                    Join Now
+                </button>
+            `;
+        }
+    }
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem('userLoggedIn');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    updateSidebarUserInfo();
+    alert('Logged out successfully!');
+}
+
+// Initialize sidebar on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateSidebarUserInfo();
+    
+    // Close sidebar with escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && sidebar.classList.contains('active')) {
+                toggleSidebar();
+            }
+        }
+    });
+    
+    // Debug: Check if sidebar button is visible
+    const sidebarBtn = document.querySelector('.sidebar-toggle');
+    console.log('Sidebar button:', sidebarBtn);
+    if (sidebarBtn) {
+        sidebarBtn.style.display = 'flex';
+        sidebarBtn.style.visibility = 'visible';
+    }
 });
 
 // Animate counter numbers
@@ -195,7 +309,6 @@ if (registrationForm) {
     registrationForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Get form data
         const formData = new FormData(this);
         const data = {
             plan: selectedPlan,
@@ -204,7 +317,6 @@ if (registrationForm) {
             phone: formData.get('phone')
         };
         
-        // Simulate API call
         setTimeout(() => {
             alert(`Registration successful!\nWelcome to Conquer Gym!\nPlan: ${selectedPlan}\nName: ${data.name}`);
             closeModal();
@@ -223,29 +335,7 @@ if (membershipModal) {
     });
 }
 
-// Initialize AOS
-if (typeof AOS !== 'undefined') {
-    AOS.init({
-        duration: 1000,
-        once: true,
-        offset: 100
-    });
-}
-
-// Hide loading screen
-window.addEventListener('load', function() {
-    const loadingScreen = document.querySelector('.loading-screen');
-    if (loadingScreen) {
-        setTimeout(() => {
-            loadingScreen.style.opacity = '0';
-            setTimeout(() => {
-                loadingScreen.style.display = 'none';
-            }, 500);
-        }, 1000);
-    }
-});
-
-// Navigation scroll effect - FIXED for dark mode
+// Navigation scroll effect
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
     if (!navbar) return;
@@ -269,32 +359,32 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Dark mode adjustments for navbar
-if (themeSwitch) {
-    themeSwitch.addEventListener('change', function() {
-        const navbar = document.querySelector('.navbar');
-        if (!navbar) return;
-        
-        if (this.checked) {
-            navbar.style.background = 'rgba(30, 39, 46, 0.98)';
-        } else {
-            navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-        }
-    });
+// Hide loading screen
+window.addEventListener('load', function() {
+    const loadingScreen = document.querySelector('.loading-screen');
+    if (loadingScreen) {
+        setTimeout(() => {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }, 1000);
+    }
+});
+
+// Demo functions
+function simulateLogin() {
+    localStorage.setItem('userLoggedIn', 'true');
+    localStorage.setItem('userName', 'John Doe');
+    localStorage.setItem('userEmail', 'john@example.com');
+    updateSidebarUserInfo();
+    alert('Demo: Logged in as John Doe');
 }
 
-// Login button functionality
-const loginBtn = document.querySelector('.btn-login:not([onclick])');
-if (loginBtn) {
-    loginBtn.addEventListener('click', function() {
-        alert('Login functionality would open here!');
-    });
-}
-
-// Join Now button functionality
-const joinBtn = document.querySelector('.btn-join');
-if (joinBtn) {
-    joinBtn.addEventListener('click', function() {
-        openMembershipModal();
-    });
+function simulateLogout() {
+    localStorage.removeItem('userLoggedIn');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    updateSidebarUserInfo();
+    alert('Demo: Logged out');
 }

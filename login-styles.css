@@ -364,3 +364,111 @@ body {
         flex-direction: column;
     }
 }
+/* ===== SIDEBAR TOGGLE BUTTON FIXES ===== */
+
+/* Show sidebar toggle button by default */
+.sidebar-toggle {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    z-index: 1000; /* Increased z-index to be above navbar */
+    background: var(--gradient-primary);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-primary);
+    transition: var(--transition);
+}
+
+.sidebar-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+}
+
+.sidebar-toggle i {
+    color: white;
+    font-size: 1.25rem;
+}
+
+/* Update navbar position to accommodate toggle button */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 85px; /* Move theme toggle left to make space for sidebar button */
+    z-index: 1000;
+}
+
+/* Adjust navbar container for the sidebar button */
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 100px 0 2rem; /* Add right padding for the button */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+}
+
+/* Make sure nav actions show properly */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Hide the sidebar-btn-nav in navbar since we have fixed sidebar-toggle */
+.sidebar-btn-nav {
+    display: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar-toggle {
+        top: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+    
+    .theme-toggle {
+        right: 75px;
+        top: 22px;
+    }
+    
+    .switch {
+        width: 60px;
+        height: 30px;
+    }
+    
+    .nav-container {
+        padding: 0 80px 0 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-toggle {
+        width: 40px;
+        height: 40px;
+        top: 15px;
+        right: 15px;
+    }
+    
+    .theme-toggle {
+        right: 65px;
+        top: 17px;
+    }
+    
+    .switch {
+        width: 50px;
+        height: 25px;
+    }
+    
+    .switch i {
+        font-size: 12px;
+    }
+}
