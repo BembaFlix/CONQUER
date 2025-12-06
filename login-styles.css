@@ -15,6 +15,10 @@
     --gradient-primary: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
     --radius-md: 12px;
     --shadow-md: 0 10px 30px rgba(0,0,0,0.1);
+    --success-color: #2ed573;
+    --warning-color: #ffa502;
+    --danger-color: #ff4757;
+    --transition: all 0.3s ease;
 }
 
 body {
@@ -44,6 +48,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: relative;
 }
 
 .login-brand {
@@ -71,10 +76,13 @@ body {
     font-family: 'Montserrat', sans-serif;
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .login-brand p {
     opacity: 0.9;
+    font-weight: 300;
 }
 
 .login-features {
@@ -87,6 +95,15 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.feature:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateX(5px);
 }
 
 .feature i {
@@ -135,6 +152,18 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .alert-error {
@@ -173,7 +202,7 @@ body {
     border-radius: 8px;
     font-family: 'Poppins', sans-serif;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .input-group input:focus {
@@ -195,6 +224,36 @@ body {
     color: var(--gray);
     cursor: pointer;
     font-size: 1rem;
+    transition: var(--transition);
+}
+
+.toggle-password:hover {
+    color: var(--primary-color);
+}
+
+.password-strength {
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.strength-meter {
+    height: 5px;
+    background: var(--light-color);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.strength-text {
+    font-size: 0.8rem;
+    color: var(--gray);
 }
 
 .form-options {
@@ -221,11 +280,12 @@ body {
     color: var(--primary-color);
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.3s ease;
+    transition: var(--transition);
 }
 
 .forgot-link:hover {
     text-decoration: underline;
+    color: #ff3838;
 }
 
 .btn-login {
@@ -243,12 +303,61 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    transition: all 0.3s ease;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-login::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.btn-login:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20);
+        opacity: 0;
+    }
 }
 
 .btn-login:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(255, 71, 87, 0.3);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+.btn-login.loading {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.btn-login.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .form-footer {
@@ -314,7 +423,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .social-btn:hover {
@@ -324,10 +433,22 @@ body {
 
 .social-btn.google {
     color: #DB4437;
+    border-color: #DB4437;
+}
+
+.social-btn.google:hover {
+    background: #DB4437;
+    color: white;
 }
 
 .social-btn.facebook {
     color: #4267B2;
+    border-color: #4267B2;
+}
+
+.social-btn.facebook:hover {
+    background: #4267B2;
+    color: white;
 }
 
 .back-home {
@@ -337,11 +458,36 @@ body {
     color: var(--dark-color);
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: var(--transition);
 }
 
 .back-home:hover {
     color: var(--primary-color);
+    background: var(--light-color);
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid var(--light-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 @media (max-width: 768px) {
@@ -357,118 +503,42 @@ body {
     .login-right {
         padding: 2rem;
     }
+    
+    .login-brand h1 {
+        font-size: 2rem;
+    }
+    
+    .feature {
+        padding: 0.75rem;
+    }
 }
 
 @media (max-width: 480px) {
     .social-login {
         flex-direction: column;
     }
+    
+    .form-options {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .login-left, .login-right {
+        padding: 1.5rem;
+    }
 }
-/* ===== SIDEBAR TOGGLE BUTTON FIXES ===== */
 
-/* Show sidebar toggle button by default */
+/* Hide sidebar toggle on login page */
 .sidebar-toggle {
-    position: fixed;
-    top: 25px;
-    right: 25px;
-    z-index: 1000; /* Increased z-index to be above navbar */
-    background: var(--gradient-primary);
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-primary);
-    transition: var(--transition);
-}
-
-.sidebar-toggle:hover {
-    transform: scale(1.1);
-    box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
-}
-
-.sidebar-toggle i {
-    color: white;
-    font-size: 1.25rem;
-}
-
-/* Update navbar position to accommodate toggle button */
-.theme-toggle {
-    position: fixed;
-    top: 20px;
-    right: 85px; /* Move theme toggle left to make space for sidebar button */
-    z-index: 1000;
-}
-
-/* Adjust navbar container for the sidebar button */
-.nav-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 100px 0 2rem; /* Add right padding for the button */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 80px;
-}
-
-/* Make sure nav actions show properly */
-.nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-/* Hide the sidebar-btn-nav in navbar since we have fixed sidebar-toggle */
-.sidebar-btn-nav {
     display: none !important;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .sidebar-toggle {
-        top: 20px;
-        right: 20px;
-        width: 45px;
-        height: 45px;
-    }
-    
-    .theme-toggle {
-        right: 75px;
-        top: 22px;
-    }
-    
-    .switch {
-        width: 60px;
-        height: 30px;
-    }
-    
-    .nav-container {
-        padding: 0 80px 0 1rem;
-    }
+.theme-toggle {
+    display: none !important;
 }
 
-@media (max-width: 480px) {
-    .sidebar-toggle {
-        width: 40px;
-        height: 40px;
-        top: 15px;
-        right: 15px;
-    }
-    
-    .theme-toggle {
-        right: 65px;
-        top: 17px;
-    }
-    
-    .switch {
-        width: 50px;
-        height: 25px;
-    }
-    
-    .switch i {
-        font-size: 12px;
-    }
+/* Remove any navbar styles from login page */
+.navbar {
+    display: none !important;
 }
