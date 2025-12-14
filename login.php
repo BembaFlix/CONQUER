@@ -397,7 +397,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </button>
                     </div>
                     
-                    <a href="index.html" class="back-home"
+                    <a href="index.php" class="back-home"
                        style="display: inline-flex; align-items: center; gap: 8px; color: #6c757d; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.3s;">
                         <i class="fas fa-arrow-left"></i>
                         Back to Home

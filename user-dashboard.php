@@ -463,7 +463,7 @@ try {
                                 <i class="fas fa-trophy"></i>
                                 <span>Share Story</span>
                             </a>
-                            <a href="index.html#trainers" class="action-item">
+                            <a href="index.php#trainers" class="action-item">
                                 <i class="fas fa-users"></i>
                                 <span>Find Trainer</span>
                             </a>

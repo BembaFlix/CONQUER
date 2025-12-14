@@ -1,3 +1,101 @@
+<?php
+// Start session for user authentication
+session_start();
+
+// Initialize variables
+$registration_message = '';
+$registration_success = false;
+$user_logged_in = isset($_SESSION['user_id']);
+$user_name = $user_logged_in ? $_SESSION['full_name'] : 'Guest User';
+$user_status = $user_logged_in ? 'Logged in' : 'Not logged in';
+$user_initial = $user_logged_in ? strtoupper(substr($user_name, 0, 1)) : 'G';
+
+// Database connection
+require_once 'config/database.php';
+
+// Handle registration
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
+    $name = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $phone = $_POST['phone'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+    $plan = $_POST['plan'] ?? 'warrior';
+    $terms = isset($_POST['terms']) ? true : false;
+
+    // Validate input
+    $errors = [];
+    
+    if (empty($name)) $errors[] = "Full name is required";
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Valid email is required";
+    if (empty($phone)) $errors[] = "Phone number is required";
+    if (empty($password)) $errors[] = "Password is required";
+    if ($password !== $confirm_password) $errors[] = "Passwords do not match";
+    if (strlen($password) < 6) $errors[] = "Password must be at least 6 characters";
+    if (!$terms) $errors[] = "You must agree to the terms and conditions";
+    
+    if (empty($errors)) {
+        try {
+            $database = Database::getInstance();
+            $pdo = $database->getConnection();
+            
+            // Check if user already exists
+            $checkStmt = $pdo->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
+            $username = strtolower(str_replace(' ', '_', $name));
+            $checkStmt->execute([$email, $username]);
+            
+            if ($checkStmt->rowCount() > 0) {
+                $errors[] = "User with this email or username already exists";
+            } else {
+                // Insert user
+                $password_hash = password_hash($password, PASSWORD_DEFAULT);
+                $insertStmt = $pdo->prepare("
+                    INSERT INTO users (username, email, password_hash, full_name, user_type, created_at, is_active) 
+                    VALUES (?, ?, ?, ?, 'member', NOW(), 1)
+                ");
+                
+                if ($insertStmt->execute([$username, $email, $password_hash, $name])) {
+                    $user_id = $pdo->lastInsertId();
+                    
+                    // Insert into gym_members table
+                    $plan_name = ucfirst($plan);
+                    $status = 'Active';
+                    
+                    $memberStmt = $pdo->prepare("
+                        INSERT INTO gym_members (Name, Age, MembershipPlan, ContactNumber, Email, MembershipStatus, JoinDate)
+                        VALUES (?, ?, ?, ?, ?, ?, NOW())
+                    ");
+                    
+                    // For now, set age as 25 (can be added to registration form later)
+                    $age = 25;
+                    $memberStmt->execute([$name, $age, $plan_name, $phone, $email, $status]);
+                    
+                    // Auto-login after registration
+                    $_SESSION['user_id'] = $user_id;
+                    $_SESSION['full_name'] = $name;
+                    $_SESSION['email'] = $email;
+                    $_SESSION['user_type'] = 'member';
+                    
+                    $registration_success = true;
+                    $registration_message = "Registration successful! Redirecting to dashboard...";
+                    
+                    // Redirect to dashboard after 2 seconds
+                    header("refresh:2;url=user-dashboard.php");
+                } else {
+                    $errors[] = "Registration failed. Please try again.";
+                }
+            }
+        } catch (PDOException $e) {
+            $errors[] = "Database error: " . $e->getMessage();
+        }
+    }
+    
+    if (!empty($errors)) {
+        $registration_message = implode("<br>", $errors);
+        $registration_success = false;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,7 +124,7 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <a href="index.html" class="sidebar-logo">
+            <a href="index.php" class="sidebar-logo">
                 <i class="fas fa-dumbbell"></i>
                 CONQUER
             </a>
@@ -36,10 +134,10 @@
         </div>
         
         <div class="sidebar-user">
-            <div class="user-avatar" id="user-avatar">G</div>
+            <div class="user-avatar" id="user-avatar"><?php echo $user_initial; ?></div>
             <div class="user-info">
-                <h3 id="user-name">Guest User</h3>
-                <p id="user-status">Not logged in</p>
+                <h3 id="user-name"><?php echo htmlspecialchars($user_name); ?></h3>
+                <p id="user-status"><?php echo $user_status; ?></p>
             </div>
         </div>
         
@@ -57,18 +155,29 @@
         </div>
         
         <div class="sidebar-actions">
-            <button class="sidebar-btn sidebar-btn-primary" onclick="window.location.href='login.php'; toggleSidebar();">
-                <i class="fas fa-sign-in-alt"></i>
-                Login
-            </button>
-            <button class="sidebar-btn sidebar-btn-secondary" onclick="window.location.href='register.php'; toggleSidebar();">
-                <i class="fas fa-user-plus"></i>
-                Sign Up
-            </button>
-            <button class="sidebar-btn sidebar-btn-primary" onclick="openMembershipModal(); toggleSidebar();">
-                <i class="fas fa-fire"></i>
-                Join Now
-            </button>
+            <?php if($user_logged_in): ?>
+                <button class="sidebar-btn sidebar-btn-primary" onclick="window.location.href='user-dashboard.php'; toggleSidebar();">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Dashboard
+                </button>
+                <button class="sidebar-btn sidebar-btn-secondary" onclick="window.location.href='logout.php'; toggleSidebar();">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            <?php else: ?>
+                <button class="sidebar-btn sidebar-btn-primary" onclick="window.location.href='login.php'; toggleSidebar();">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </button>
+                <button class="sidebar-btn sidebar-btn-secondary" onclick="window.location.href='register.php'; toggleSidebar();">
+                    <i class="fas fa-user-plus"></i>
+                    Sign Up
+                </button>
+                <button class="sidebar-btn sidebar-btn-primary" onclick="openMembershipModal(); toggleSidebar();">
+                    <i class="fas fa-fire"></i>
+                    Join Now
+                </button>
+            <?php endif; ?>
         </div>
         
         <div class="sidebar-footer">
@@ -93,7 +202,7 @@
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">
+            <a href="index.php" class="nav-logo">
                 <div class="logo-icon">
                     <i class="fas fa-dumbbell"></i>
                 </div>
@@ -112,14 +221,25 @@
                 </ul>
                 
                 <div class="nav-actions">
-                    <button class="btn-login" onclick="window.location.href='login.php'">
-                        <i class="fas fa-user"></i>
-                        <span>Login</span>
-                    </button>
-                    <button class="btn-primary btn-join" onclick="openMembershipModal()">
-                        <span>Join Now</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </button>
+                    <?php if($user_logged_in): ?>
+                        <button class="btn-login" onclick="window.location.href='user-dashboard.php'">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </button>
+                        <button class="btn-primary btn-join" onclick="window.location.href='logout.php'">
+                            <span>Logout</span>
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    <?php else: ?>
+                        <button class="btn-login" onclick="window.location.href='login.php'">
+                            <i class="fas fa-user"></i>
+                            <span>Login</span>
+                        </button>
+                        <button class="btn-primary btn-join" onclick="openMembershipModal()">
+                            <span>Join Now</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
             
@@ -157,14 +277,25 @@
                 </div>
                 
                 <div class="hero-actions">
-                    <button class="btn-primary btn-hero" onclick="openMembershipModal()">
-                        <span>Start Your Journey</span>
-                        <i class="fas fa-fire"></i>
-                    </button>
-                    <button class="btn-secondary" onclick="scrollToSection('memberships')">
-                        <i class="fas fa-play-circle"></i>
-                        <span>Virtual Tour</span>
-                    </button>
+                    <?php if($user_logged_in): ?>
+                        <button class="btn-primary btn-hero" onclick="window.location.href='user-dashboard.php'">
+                            <span>Go to Dashboard</span>
+                            <i class="fas fa-tachometer-alt"></i>
+                        </button>
+                        <button class="btn-secondary" onclick="window.location.href='user-bookclass.php'">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Book a Class</span>
+                        </button>
+                    <?php else: ?>
+                        <button class="btn-primary btn-hero" onclick="openMembershipModal()">
+                            <span>Start Your Journey</span>
+                            <i class="fas fa-fire"></i>
+                        </button>
+                        <button class="btn-secondary" onclick="window.location.href='register.php'">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Create Account</span>
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
             
@@ -590,10 +721,17 @@
             
             <div class="stories-cta" data-aos="fade-up">
                 <p>Ready to start your own success story?</p>
-                <button class="btn-primary" onclick="openMembershipModal()">
-                    Start Your Journey Today
-                    <i class="fas fa-fire"></i>
-                </button>
+                <?php if($user_logged_in): ?>
+                    <button class="btn-primary" onclick="window.location.href='submit-story.php'">
+                        Share Your Story
+                        <i class="fas fa-trophy"></i>
+                    </button>
+                <?php else: ?>
+                    <button class="btn-primary" onclick="openMembershipModal()">
+                        Start Your Journey Today
+                        <i class="fas fa-fire"></i>
+                    </button>
+                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -736,21 +874,48 @@
             </div>
             
             <div class="modal-body">
-                <form id="registrationForm">
+                <?php if($registration_message): ?>
+                    <div class="registration-message <?php echo $registration_success ? 'success' : 'error'; ?>">
+                        <?php echo $registration_message; ?>
+                    </div>
+                    <style>
+                        .registration-message {
+                            padding: 15px;
+                            margin-bottom: 20px;
+                            border-radius: 5px;
+                            font-weight: 600;
+                        }
+                        .registration-message.success {
+                            background: #d4edda;
+                            color: #155724;
+                            border: 1px solid #c3e6cb;
+                        }
+                        .registration-message.error {
+                            background: #f8d7da;
+                            color: #721c24;
+                            border: 1px solid #f5c6cb;
+                        }
+                    </style>
+                <?php endif; ?>
+                
+                <form id="registrationForm" method="POST">
+                    <input type="hidden" name="plan" id="selectedPlan" value="warrior">
+                    <input type="hidden" name="register" value="1">
+                    
                     <div class="form-step active" id="step1">
                         <h3>Choose Your Plan</h3>
                         <div class="plan-options">
-                            <div class="plan-option" onclick="selectPlanOption('warrior')">
+                            <div class="plan-option <?php echo (isset($_POST['plan']) && $_POST['plan'] == 'warrior') ? 'selected' : ''; ?>" onclick="selectPlanOption('warrior')">
                                 <h4>Warrior</h4>
                                 <div class="price">$29<span>/month</span></div>
                                 <p>Basic access</p>
                             </div>
-                            <div class="plan-option popular" onclick="selectPlanOption('champion')">
+                            <div class="plan-option popular <?php echo (isset($_POST['plan']) && $_POST['plan'] == 'champion') ? 'selected' : ''; ?>" onclick="selectPlanOption('champion')">
                                 <h4>Champion</h4>
                                 <div class="price">$49<span>/month</span></div>
                                 <p>Most popular</p>
                             </div>
-                            <div class="plan-option" onclick="selectPlanOption('legend')">
+                            <div class="plan-option <?php echo (isset($_POST['plan']) && $_POST['plan'] == 'legend') ? 'selected' : ''; ?>" onclick="selectPlanOption('legend')">
                                 <h4>Legend</h4>
                                 <div class="price">$79<span>/month</span></div>
                                 <p>Premium experience</p>
@@ -766,13 +931,13 @@
                     <div class="form-step" id="step2">
                         <h3>Personal Information</h3>
                         <div class="form-group">
-                            <input type="text" name="name" placeholder="Full Name" required>
+                            <input type="text" name="name" placeholder="Full Name" value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name']) : ''; ?>" required>
                         </div>
                         <div class="form-group">
-                            <input type="email" name="email" placeholder="Email Address" required>
+                            <input type="email" name="email" placeholder="Email Address" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
                         </div>
                         <div class="form-group">
-                            <input type="tel" name="phone" placeholder="Phone Number">
+                            <input type="tel" name="phone" placeholder="Phone Number" value="<?php echo isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : ''; ?>" required>
                         </div>
                         
                         <div class="form-actions">
@@ -797,7 +962,7 @@
                         </div>
                         
                         <div class="form-check">
-                            <input type="checkbox" id="terms" name="terms" required>
+                            <input type="checkbox" id="terms" name="terms" <?php echo isset($_POST['terms']) ? 'checked' : ''; ?> required>
                             <label for="terms">
                                 I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
                             </label>
@@ -922,11 +1087,18 @@
                     });
                 });
             }
+            
+            // Auto-open modal if there's an error
+            <?php if($registration_message && !$registration_success): ?>
+                setTimeout(function() {
+                    openMembershipModal();
+                }, 500);
+            <?php endif; ?>
         });
         
         // Modal functions
         let currentStep = 1;
-        let selectedPlan = '';
+        let selectedPlan = 'warrior';
         
         function openMembershipModal() {
             const modal = document.getElementById('membershipModal');
@@ -945,17 +1117,26 @@
         
         function selectPlan(plan) {
             selectedPlan = plan;
+            document.getElementById('selectedPlan').value = plan;
             openMembershipModal();
+            // Auto-select the plan in the modal
+            setTimeout(() => {
+                selectPlanOption(plan);
+            }, 100);
         }
         
         function selectPlanOption(plan) {
             selectedPlan = plan;
+            document.getElementById('selectedPlan').value = plan;
             document.querySelectorAll('.plan-option').forEach(option => {
+                option.classList.remove('selected');
                 option.style.borderColor = '#f1f2f6';
                 option.style.background = '#ffffff';
             });
-            event.currentTarget.style.borderColor = '#ff4757';
-            event.currentTarget.style.background = 'rgba(255, 71, 87, 0.1)';
+            const selectedOption = event.currentTarget;
+            selectedOption.classList.add('selected');
+            selectedOption.style.borderColor = '#ff4757';
+            selectedOption.style.background = 'rgba(255, 71, 87, 0.1)';
         }
         
         function nextStep() {
@@ -989,7 +1170,7 @@
         
         function resetForm() {
             currentStep = 1;
-            selectedPlan = '';
+            selectedPlan = 'warrior';
             document.querySelectorAll('.form-step').forEach(step => {
                 step.style.display = 'none';
             });
@@ -1002,7 +1183,12 @@
                 step.style.background = '#f1f2f6';
             });
             document.querySelector('.progress-step[data-step="1"]').style.background = '#ff4757';
-            document.getElementById('registrationForm').reset();
+            // Reset to warrior plan
+            const warriorOption = document.querySelector('.plan-option:first-child');
+            if (warriorOption) {
+                warriorOption.style.borderColor = '#ff4757';
+                warriorOption.style.background = 'rgba(255, 71, 87, 0.1)';
+            }
         }
         
         // Close modal when clicking outside
@@ -1025,6 +1211,26 @@
                 navToggle.classList.toggle('active');
             });
         }
+        
+        // Form validation
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            const password = this.querySelector('[name="password"]').value;
+            const confirmPassword = this.querySelector('[name="confirm_password"]').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                return false;
+            }
+            
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('Password must be at least 6 characters long!');
+                return false;
+            }
+            
+            return true;
+        });
     </script>
 </body>
 </html>
