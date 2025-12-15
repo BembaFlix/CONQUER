@@ -1,163 +1,196 @@
 <?php
 session_start();
-require_once 'config/database.php';
 
-// Enable FULL debugging
+// Debug mode
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 
-// Debug: Output everything at the beginning
-echo "<!-- DEBUG START -->\n";
-echo "<!-- GET parameters: " . print_r($_GET, true) . " -->\n";
-echo "<!-- SESSION user_id: " . ($_SESSION['user_id'] ?? 'NOT SET') . " -->\n";
-echo "<!-- SESSION user_type: " . ($_SESSION['user_type'] ?? 'NOT SET') . " -->\n";
+require_once 'config/database.php';
 
 // Check if user is logged in as admin
 if(!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || $_SESSION['user_type'] !== 'admin') {
-    echo "<!-- ERROR: Not logged in as admin -->\n";
-    header('Location: login.php');
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
     exit();
 }
 
-echo "<!-- User is logged in as admin -->\n";
+// Get action and payment ID
+$action = isset($_GET['action']) ? $_GET['action'] : '';
+$paymentId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$reason = isset($_GET['reason']) ? $_GET['reason'] : '';
 
-// Check if action and ID are provided
-if(!isset($_GET['action']) || !isset($_GET['id'])) {
-    echo "<!-- ERROR: Missing parameters. Action exists: " . (isset($_GET['action']) ? 'YES' : 'NO') . " -->\n";
-    echo "<!-- ERROR: Missing parameters. ID exists: " . (isset($_GET['id']) ? 'YES' : 'NO') . " -->\n";
-    $_SESSION['admin_message'] = "Invalid request parameters. Action: " . (isset($_GET['action']) ? $_GET['action'] : 'NOT SET') . ", ID: " . (isset($_GET['id']) ? $_GET['id'] : 'NOT SET');
-    $_SESSION['admin_message_type'] = 'danger';
-    header('Location: admin-payments.php');
+// Validate inputs
+if(empty($action) || $paymentId <= 0) {
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
     exit();
 }
-
-echo "<!-- Parameters received - Action: " . $_GET['action'] . ", ID: " . $_GET['id'] . " -->\n";
-
-$action = $_GET['action'];
-$payment_id = (int)$_GET['id'];
-$admin_id = $_SESSION['user_id'];
-
-echo "<!-- Processed - Action: $action, Payment ID: $payment_id, Admin ID: $admin_id -->\n";
-
-// Validate action
-$valid_actions = ['approve', 'reject', 'refund'];
-if(!in_array($action, $valid_actions)) {
-    echo "<!-- ERROR: Invalid action: $action -->\n";
-    $_SESSION['admin_message'] = "Invalid action specified: $action";
-    $_SESSION['admin_message_type'] = 'danger';
-    header('Location: admin-payments.php');
-    exit();
-}
-
-echo "<!-- Action is valid -->\n";
 
 try {
     $pdo = Database::getInstance()->getConnection();
-    echo "<!-- Database connection successful -->\n";
     
-    // First, check if payment exists
+    // Check what columns exist in payments table
+    $columnsStmt = $pdo->query("SHOW COLUMNS FROM payments");
+    $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Determine which columns to update
+    $hasConfirmedBy = in_array('confirmed_by', $columns);
+    $hasConfirmedAt = in_array('confirmed_at', $columns);
+    $hasUpdatedAt = in_array('updated_at', $columns);
+    
+    // Start transaction
+    $pdo->beginTransaction();
+    
+    // Get payment details first
     $stmt = $pdo->prepare("SELECT * FROM payments WHERE id = ?");
-    $stmt->execute([$payment_id]);
+    $stmt->execute([$paymentId]);
     $payment = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    echo "<!-- Payment query executed. Found: " . ($payment ? 'YES' : 'NO') . " -->\n";
-    
     if(!$payment) {
-        echo "<!-- ERROR: Payment #$payment_id not found in database -->\n";
-        $_SESSION['admin_message'] = "Payment #$payment_id not found.";
-        $_SESSION['admin_message_type'] = 'danger';
-        header('Location: admin-payments.php');
-        exit();
+        throw new Exception("Payment not found");
     }
     
-    echo "<!-- Payment found: ID=" . $payment['id'] . ", Status=" . ($payment['status'] ?? 'N/A') . " -->\n";
+    $response = [];
     
-    // Determine new status based on action
     switch($action) {
         case 'approve':
-            $newStatus = 'completed';
-            $message = "Payment approved successfully!";
-            echo "<!-- Setting status to: completed -->\n";
+            // Build UPDATE query based on available columns
+            $updateFields = ["status = 'completed'"];
+            $updateParams = [];
+            
+            if($hasConfirmedBy) {
+                $updateFields[] = "confirmed_by = ?";
+                $updateParams[] = $_SESSION['user_id'];
+            }
+            
+            if($hasConfirmedAt) {
+                $updateFields[] = "confirmed_at = NOW()";
+            }
+            
+            if($hasUpdatedAt) {
+                $updateFields[] = "updated_at = NOW()";
+            }
+            
+            $updateSql = "UPDATE payments SET " . implode(', ', $updateFields) . " WHERE id = ?";
+            $updateParams[] = $paymentId;
+            
+            $updateStmt = $pdo->prepare($updateSql);
+            $updateStmt->execute($updateParams);
+            
+            // If this is for a subscription, update user's subscription (if table exists)
+            if(!empty($payment['subscription_id']) && !empty($payment['user_id'])) {
+                try {
+                    // Check if user_subscriptions table exists
+                    $subscriptionTableExists = $pdo->query("SHOW TABLES LIKE 'user_subscriptions'")->rowCount() > 0;
+                    
+                    if($subscriptionTableExists) {
+                        $subscriptionStmt = $pdo->prepare("
+                            UPDATE user_subscriptions 
+                            SET status = 'active',
+                                start_date = CURDATE(),
+                                end_date = DATE_ADD(CURDATE(), INTERVAL 1 MONTH)
+                            WHERE id = ? AND user_id = ?
+                        ");
+                        $subscriptionStmt->execute([$payment['subscription_id'], $payment['user_id']]);
+                    }
+                } catch (Exception $e) {
+                    // Log but don't fail the payment update
+                    error_log("Subscription update error: " . $e->getMessage());
+                }
+            }
+            
+            $response = ['success' => true, 'message' => 'Payment approved successfully'];
             break;
+            
         case 'reject':
-            $newStatus = 'failed';
-            $message = "Payment rejected.";
-            echo "<!-- Setting status to: failed -->\n";
+            // Build UPDATE query for rejection
+            $updateFields = ["status = 'failed'"];
+            $updateParams = [];
+            
+            // Add reason to notes
+            if(!empty($reason)) {
+                $updateFields[] = "notes = CONCAT(COALESCE(notes, ''), ' [Rejected: " . addslashes($reason) . "]')";
+            }
+            
+            if($hasConfirmedBy) {
+                $updateFields[] = "confirmed_by = ?";
+                $updateParams[] = $_SESSION['user_id'];
+            }
+            
+            if($hasConfirmedAt) {
+                $updateFields[] = "confirmed_at = NOW()";
+            }
+            
+            if($hasUpdatedAt) {
+                $updateFields[] = "updated_at = NOW()";
+            }
+            
+            $updateSql = "UPDATE payments SET " . implode(', ', $updateFields) . " WHERE id = ?";
+            $updateParams[] = $paymentId;
+            
+            $updateStmt = $pdo->prepare($updateSql);
+            $updateStmt->execute($updateParams);
+            
+            $response = ['success' => true, 'message' => 'Payment rejected successfully'];
             break;
+            
         case 'refund':
-            $newStatus = 'refunded';
-            $message = "Payment refunded.";
-            $reason = isset($_GET['reason']) ? $_GET['reason'] : 'Refund processed';
-            echo "<!-- Setting status to: refunded -->\n";
+            // Build UPDATE query for refund
+            $updateFields = ["status = 'refunded'"];
+            $updateParams = [];
+            
+            // Add reason to notes
+            if(!empty($reason)) {
+                $updateFields[] = "notes = CONCAT(COALESCE(notes, ''), ' [Refunded: " . addslashes($reason) . "]')";
+            }
+            
+            if($hasConfirmedBy) {
+                $updateFields[] = "confirmed_by = ?";
+                $updateParams[] = $_SESSION['user_id'];
+            }
+            
+            if($hasConfirmedAt) {
+                $updateFields[] = "confirmed_at = NOW()";
+            }
+            
+            if($hasUpdatedAt) {
+                $updateFields[] = "updated_at = NOW()";
+            }
+            
+            $updateSql = "UPDATE payments SET " . implode(', ', $updateFields) . " WHERE id = ?";
+            $updateParams[] = $paymentId;
+            
+            $updateStmt = $pdo->prepare($updateSql);
+            $updateStmt->execute($updateParams);
+            
+            $response = ['success' => true, 'message' => 'Payment refunded successfully'];
             break;
+            
+        default:
+            throw new Exception("Invalid action");
     }
     
-    // Build the update query
-    $sql = "UPDATE payments SET 
-            status = :status,
-            confirmed_by = :admin_id,
-            confirmation_date = NOW(),
-            updated_at = NOW()";
+    // Commit transaction
+    $pdo->commit();
     
-    $params = [
-        ':status' => $newStatus,
-        ':admin_id' => $admin_id,
-        ':payment_id' => $payment_id
-    ];
+    // Return JSON response
+    header('Content-Type: application/json');
+    echo json_encode($response);
     
-    // Add notes for refund
-    if($action == 'refund' && isset($reason)) {
-        $sql .= ", notes = CONCAT(COALESCE(notes, ''), '\n[REFUND] ', :reason)";
-        $params[':reason'] = $reason;
-    }
-    
-    $sql .= " WHERE id = :payment_id";
-    
-    echo "<!-- SQL Query: $sql -->\n";
-    echo "<!-- Parameters: " . print_r($params, true) . " -->\n";
-    
-    // Execute the update
-    $updateStmt = $pdo->prepare($sql);
-    $result = $updateStmt->execute($params);
-    
-    echo "<!-- Update executed. Result: " . ($result ? 'SUCCESS' : 'FAILED') . " -->\n";
-    echo "<!-- Rows affected: " . $updateStmt->rowCount() . " -->\n";
-    
-    if($result && $updateStmt->rowCount() > 0) {
-        $_SESSION['admin_message'] = $message;
-        $_SESSION['admin_message_type'] = 'success';
-        
-        // Log success
-        error_log("Payment #$payment_id updated successfully. Status changed to: $newStatus");
-        echo "<!-- Success message set in session -->\n";
-    } else {
-        $_SESSION['admin_message'] = "No changes made. Payment may already be in this status.";
-        $_SESSION['admin_message_type'] = 'warning';
-        echo "<!-- Warning: No changes made -->\n";
-    }
-    
-    echo "<!-- Redirecting to admin-payments.php -->\n";
-    header('Location: admin-payments.php');
-    exit();
-    
-} catch (PDOException $e) {
-    // Log detailed error
-    error_log("Database Error in admin-process-payment.php: " . $e->getMessage());
-    error_log("SQL Error Info: " . print_r($pdo->errorInfo(), true));
-    
-    echo "<!-- PDOException: " . $e->getMessage() . " -->\n";
-    $_SESSION['admin_message'] = "Error updating payment: " . $e->getMessage();
-    $_SESSION['admin_message_type'] = 'danger';
-    header('Location: admin-payments.php');
-    exit();
 } catch (Exception $e) {
-    error_log("General Error in admin-process-payment.php: " . $e->getMessage());
+    // Rollback on error
+    if(isset($pdo)) {
+        $pdo->rollBack();
+    }
     
-    echo "<!-- Exception: " . $e->getMessage() . " -->\n";
-    $_SESSION['admin_message'] = "An error occurred: " . $e->getMessage();
-    $_SESSION['admin_message_type'] = 'danger';
-    header('Location: admin-payments.php');
-    exit();
+    // Log error
+    error_log("Payment processing error: " . $e->getMessage());
+    
+    // Return error response
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Error processing payment: ' . $e->getMessage()
+    ]);
 }
 ?>
