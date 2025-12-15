@@ -67,6 +67,7 @@ $totalTrainers = count($trainers);
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 2rem;
             margin-top: 1rem;
+            padding-bottom: 2rem;
         }
         
         .trainer-card {
@@ -78,6 +79,8 @@ $totalTrainers = count($trainers);
             border: 1px solid #e8e8e8;
             display: flex;
             flex-direction: column;
+            height: 100%;
+            min-height: 520px;
         }
         
         .trainer-card:hover {
@@ -91,6 +94,7 @@ $totalTrainers = count($trainers);
             flex-shrink: 0;
             position: relative;
             overflow: hidden;
+            min-height: 220px;
         }
         
         .trainer-header::before {
@@ -120,6 +124,7 @@ $totalTrainers = count($trainers);
             font-size: 2.5rem;
             border: 4px solid white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: white;
         }
         
         .trainer-header h3 {
@@ -129,10 +134,18 @@ $totalTrainers = count($trainers);
             color: #2f3542;
         }
         
-        .trainer-header p {
-            font-size: 1.1rem;
-            font-weight: 500;
+        .specialization-tag {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 700;
             margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: inherit;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
         .trainer-body {
@@ -140,10 +153,12 @@ $totalTrainers = count($trainers);
             flex-grow: 1;
             display: flex;
             flex-direction: column;
+            overflow: visible;
         }
         
         .trainer-info {
             margin-bottom: 1.5rem;
+            flex-grow: 1;
         }
         
         .trainer-info p {
@@ -239,28 +254,13 @@ $totalTrainers = count($trainers);
             flex-shrink: 0;
         }
         
-        /* Specialization tags */
-        .specialization-tag {
-            display: inline-block;
-            padding: 0.5rem 1.5rem;
-            border-radius: 50px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            background: rgba(255, 255, 255, 0.95);
-            color: inherit;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
         /* Rating stars */
         .rating-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0.5rem;
-            margin: 1rem 0 1.5rem;
+            margin: 0.5rem 0 1rem;
         }
         
         .rating-value {
@@ -349,6 +349,22 @@ $totalTrainers = count($trainers);
             color: white;
         }
         
+        /* Container fixes */
+        .content-card {
+            overflow: visible !important;
+        }
+        
+        .card-body {
+            overflow: visible !important;
+        }
+        
+        /* Dashboard content fixes */
+        .dashboard-content {
+            overflow-y: auto;
+            height: calc(100vh - 120px);
+            padding-bottom: 2rem;
+        }
+        
         /* Responsive */
         @media (max-width: 1200px) {
             .trainer-grid {
@@ -359,11 +375,13 @@ $totalTrainers = count($trainers);
         @media (max-width: 768px) {
             .trainer-grid {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
             
             .trainer-card {
                 max-width: 450px;
                 margin: 0 auto;
+                min-height: 500px;
             }
         }
         
@@ -380,9 +398,27 @@ $totalTrainers = count($trainers);
             .stat-item {
                 flex: none;
             }
+            
+            .trainer-card {
+                min-height: 520px;
+            }
         }
         
         /* Search bar */
+        .search-bar {
+            position: relative;
+            flex: 1;
+            max-width: 500px;
+        }
+        
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        
         #searchInput {
             width: 100%;
             padding: 0.75rem 1rem 0.75rem 2.5rem;
@@ -390,6 +426,7 @@ $totalTrainers = count($trainers);
             border-radius: 8px;
             font-size: 1rem;
             transition: all 0.3s;
+            background: white;
         }
         
         #searchInput:focus {
@@ -402,21 +439,25 @@ $totalTrainers = count($trainers);
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
+            grid-column: 1 / -1;
         }
         
         .empty-state i {
             color: #e9ecef;
             margin-bottom: 1.5rem;
+            font-size: 4rem;
         }
         
         .empty-state h3 {
             color: #495057;
             margin-bottom: 1rem;
+            font-size: 1.8rem;
         }
         
         .empty-state p {
             color: #6c757d;
             margin-bottom: 2rem;
+            font-size: 1.1rem;
         }
         
         /* No results message */
@@ -424,6 +465,16 @@ $totalTrainers = count($trainers);
             grid-column: 1 / -1;
             text-align: center;
             padding: 3rem;
+        }
+        
+        /* Welcome banner adjustments */
+        .welcome-banner {
+            margin-bottom: 2rem;
+        }
+        
+        /* Top bar adjustments */
+        .top-bar {
+            margin-bottom: 1.5rem;
         }
     </style>
 </head>
@@ -536,9 +587,6 @@ $totalTrainers = count($trainers);
                                         </div>
                                         
                                         <div class="trainer-actions">
-                                            <a href="admin-trainer-view.php?id=<?php echo $trainer['id']; ?>" class="btn-sm">
-                                                <i class="fas fa-eye"></i> View
-                                            </a>
                                             <a href="admin-edit-trainer.php?id=<?php echo $trainer['id']; ?>" class="btn-sm">
                                                 <i class="fas fa-edit"></i> Edit
                                             </a>
