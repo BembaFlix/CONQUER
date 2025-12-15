@@ -1,100 +1,90 @@
 <?php
-// setup_database.php
-// Run this file once to set up your database
-
-echo "<h2>Conquer Gym Database Setup</h2>";
-echo "Starting database setup...<br><br>";
-
-$host = 'localhost';
-$username = 'root';
-$password = '';
+// Simple database setup
+require_once 'config/database.php';
 
 try {
-    // Connect to MySQL server
-    $pdo = new PDO("mysql:host=$host", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = Database::getInstance()->getConnection();
     
-    echo "✅ Connected to MySQL server successfully.<br><br>";
+    echo "<h1>Setting up database...</h1>";
     
-    // Check if SQL file exists
-    $sqlFile = 'conquer_gym.sql';
+    // 1. Create payments table
+    $sql = "
+        CREATE TABLE IF NOT EXISTS payments (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            user_id INT,
+            amount DECIMAL(10,2),
+            payment_method VARCHAR(50),
+            status VARCHAR(20) DEFAULT 'pending',
+            payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+            transaction_id VARCHAR(100),
+            notes TEXT
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ";
     
-    if (!file_exists($sqlFile)) {
-        echo "❌ Error: SQL file not found: $sqlFile<br>";
-        echo "Please make sure 'conquer_gym.sql' is in the same directory.<br>";
-        exit;
+    $pdo->exec($sql);
+    echo "✓ Payments table created<br>";
+    
+    // 2. Insert sample data
+    $sampleData = [
+        [1, 49.99, 'credit_card', 'completed', date('Y-m-d H:i:s', strtotime('-5 days')), 'TXN001', 'Monthly payment'],
+        [2, 79.99, 'gcash', 'completed', date('Y-m-d H:i:s', strtotime('-3 days')), 'TXN002', 'GCash payment'],
+        [3, 29.99, 'cash', 'pending', date('Y-m-d H:i:s', strtotime('-1 day')), 'TXN003', 'Cash payment'],
+        [1, 49.99, 'paymaya', 'pending', date('Y-m-d H:i:s'), 'TXN004', 'PayMaya payment'],
+        [2, 79.99, 'bank_transfer', 'completed', date('Y-m-d H:i:s', strtotime('-2 days')), 'TXN005', 'Bank transfer']
+    ];
+    
+    $stmt = $pdo->prepare("
+        INSERT INTO payments (user_id, amount, payment_method, status, payment_date, transaction_id, notes) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+    
+    $count = 0;
+    foreach($sampleData as $data) {
+        $stmt->execute($data);
+        $count++;
     }
     
-    echo "📄 Reading SQL file: $sqlFile<br>";
+    echo "✓ $count sample payments inserted<br>";
     
-    // Read the entire SQL file
-    $sql = file_get_contents($sqlFile);
-    
-    if (empty($sql)) {
-        echo "❌ Error: SQL file is empty.<br>";
-        exit;
+    // 3. Create uploads directory
+    if(!is_dir('uploads')) {
+        mkdir('uploads', 0755, true);
+        echo "✓ Created uploads directory<br>";
     }
     
-    echo "✅ SQL file loaded successfully.<br>";
-    echo "Executing SQL commands...<br><hr>";
-    
-    // Split SQL by semicolon to execute commands one by one
-    $queries = explode(';', $sql);
-    $queryCount = 0;
-    $successCount = 0;
-    $errorCount = 0;
-    
-    foreach ($queries as $query) {
-        $query = trim($query);
-        
-        // Skip empty queries
-        if (empty($query)) {
-            continue;
-        }
-        
-        $queryCount++;
-        
-        // Add semicolon back for execution
-        $query .= ';';
-        
-        try {
-            $pdo->exec($query);
-            echo "✅ Query $queryCount executed successfully<br>";
-            $successCount++;
-            
-            // Add a small pause for readability
-            usleep(100000); // 0.1 second
-            
-        } catch (PDOException $e) {
-            echo "❌ Error in query $queryCount: " . $e->getMessage() . "<br>";
-            $errorCount++;
-        }
+    if(!is_dir('uploads/receipts')) {
+        mkdir('uploads/receipts', 0755, true);
+        echo "✓ Created uploads/receipts directory<br>";
     }
     
-    echo "<hr><h3>Setup Summary:</h3>";
-    echo "Total queries processed: $queryCount<br>";
-    echo "Successful queries: $successCount<br>";
-    echo "Failed queries: $errorCount<br><br>";
+    echo "<h2 style='color: green;'>Setup complete!</h2>";
+    echo "<a href='admin-payments.php'>Go to Payments Page</a>";
     
-    if ($errorCount == 0) {
-        echo "🎉 <strong>Database setup completed successfully!</strong><br>";
-        echo "You can now use the Conquer Gym system.<br>";
-    } else {
-        echo "⚠️ <strong>Database setup completed with some errors.</strong><br>";
-        echo "Please check the errors above.<br>";
+} catch (PDOException $e) {
+    echo "<h2 style='color: red;'>Error</h2>";
+    echo "Error: " . $e->getMessage() . "<br>";
+    
+    // Try simpler creation
+    try {
+        $simpleSQL = "CREATE TABLE IF NOT EXISTS payments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
+            amount DECIMAL(10,2),
+            payment_method VARCHAR(50),
+            status VARCHAR(20)
+        )";
+        
+        $pdo->exec($simpleSQL);
+        echo "✓ Simple payments table created<br>";
+        
+        // Insert minimal data
+        $pdo->exec("INSERT INTO payments (user_id, amount, payment_method, status) VALUES (1, 49.99, 'credit_card', 'completed')");
+        echo "✓ Test payment inserted<br>";
+        
+        echo "<a href='admin-payments.php'>Go to Payments Page</a>";
+        
+    } catch (PDOException $e2) {
+        echo "Even simple creation failed: " . $e2->getMessage();
     }
-    
-    echo "<br><hr>";
-    echo "<h4>Next Steps:</h4>";
-    echo "1. Delete or rename this setup_database.php file for security<br>";
-    echo "2. Use database.php in your other PHP files to connect to the database<br>";
-    echo "3. Access your application at: http://localhost/CONQUER/<br>";
-    
-} catch(PDOException $e) {
-    echo "❌ <strong>Fatal Error:</strong> " . $e->getMessage() . "<br>";
-    echo "<br>Please check:<br>";
-    echo "1. Is XAMPP MySQL running?<br>";
-    echo "2. Are the username and password correct?<br>";
-    echo "3. Is the host name correct?<br>";
 }
 ?>

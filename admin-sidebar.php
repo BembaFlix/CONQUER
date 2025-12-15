@@ -78,8 +78,16 @@ $maintenanceNeeded = $pdo->query("SELECT COUNT(*) FROM equipment WHERE status = 
             <i class="fas fa-cog"></i>
             <span>Settings</span>
         </a>
+        <a href="admin-recently-deleted.php" class="<?php echo basename($_SERVER['PHP_SELF']) === 'admin-settings.php' ? 'active' : ''; ?>">
+            <i class="fas fa-trash-restore"></i>
+            <span>Recently Deleted</span>
+        </a>
+        <a href="admin-recently-deleted-members.php" class="<?php echo basename($_SERVER['PHP_SELF']) === 'admin-settings.php' ? 'active' : ''; ?>">
+            <i class="fas fa-trash-restore"></i>
+            <span>Deleted Members</span>
+        </a>
     </nav>
-    
+
     <div class="sidebar-footer">
         <a href="logout.php" class="logout-btn">
             <i class="fas fa-sign-out-alt"></i>

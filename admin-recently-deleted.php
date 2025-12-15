@@ -13,44 +13,45 @@ if(!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || $_SESSION['
     exit();
 }
 
-// Fetch trainers from database with user information
-$trainers = [];
+// Fetch recently deleted trainers (within last 30 days)
+$deletedTrainers = [];
 try {
     $query = "
-    SELECT 
-        t.*, 
-        u.full_name, 
-        u.email, 
-        u.username,
-        u.is_active,
-        u.created_at,
-        COUNT(c.id) as total_classes
-    FROM trainers t
-    JOIN users u ON t.user_id = u.id
-    LEFT JOIN classes c ON t.id = c.trainer_id
-    WHERE u.user_type = 'trainer' 
-    AND t.deleted_at IS NULL  -- Add this line
-    AND u.deleted_at IS NULL  -- Add this line
-    GROUP BY t.id
-    ORDER BY u.full_name ASC
-";
+        SELECT 
+            t.*, 
+            u.full_name, 
+            u.email, 
+            u.username,
+            u.is_active,
+            u.created_at,
+            t.deleted_at,
+            DATEDIFF(NOW(), t.deleted_at) as days_ago,
+            COUNT(c.id) as total_classes
+        FROM trainers t
+        JOIN users u ON t.user_id = u.id
+        LEFT JOIN classes c ON t.id = c.trainer_id
+        WHERE u.user_type = 'trainer' 
+        AND t.deleted_at IS NOT NULL
+        AND t.deleted_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY t.id
+        ORDER BY t.deleted_at DESC
+    ";
     
-    $trainers = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
+    $deletedTrainers = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
     
 } catch(PDOException $e) {
-    error_log("Fetch trainers error: " . $e->getMessage());
-    // Fallback to empty array
-    $trainers = [];
+    error_log("Fetch deleted trainers error: " . $e->getMessage());
+    $deletedTrainers = [];
 }
 
-$totalTrainers = count($trainers);
+$totalDeleted = count($deletedTrainers);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Trainers | Admin Dashboard</title>
+    <title>Recently Deleted Trainers | Admin Dashboard</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,7 +64,7 @@ $totalTrainers = count($trainers);
     <!-- CSS -->
     <link rel="stylesheet" href="dashboard-style.css">
     <style>
-        /* Additional styles for trainers management */
+        /* Additional styles for deleted trainers */
         .trainer-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -83,11 +84,48 @@ $totalTrainers = count($trainers);
             flex-direction: column;
             height: 100%;
             min-height: 520px;
+            position: relative;
         }
         
         .trainer-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        
+        /* Deleted card style */
+        .trainer-card.deleted {
+            opacity: 0.9;
+            border-left: 5px solid #ff6b6b;
+        }
+        
+        .trainer-card.deleted .trainer-header {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+        
+        .deleted-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 3;
+            background: rgba(255, 107, 107, 0.95);
+            color: white;
+        }
+        
+        .days-remaining {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 3;
+            background: rgba(255, 165, 2, 0.95);
+            color: white;
         }
         
         .trainer-header {
@@ -178,6 +216,7 @@ $totalTrainers = count($trainers);
             margin-top: 3px;
             flex-shrink: 0;
             text-align: center;
+            color: #7f8c8d;
         }
         
         .trainer-stats {
@@ -238,6 +277,17 @@ $totalTrainers = count($trainers);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         
+        .btn-sm.btn-success {
+            background: linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%);
+            color: white;
+            border-color: #2ed573;
+        }
+        
+        .btn-sm.btn-success:hover {
+            background: linear-gradient(135deg, #1dd1a1 0%, #1abc9c 100%);
+            border-color: #1dd1a1;
+        }
+        
         .btn-sm.btn-danger {
             background: linear-gradient(135deg, #ff4757 0%, #ff2e43 100%);
             color: white;
@@ -256,108 +306,52 @@ $totalTrainers = count($trainers);
             flex-shrink: 0;
         }
         
-        /* Rating stars */
-        .rating-container {
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state i {
+            color: #e9ecef;
+            margin-bottom: 1.5rem;
+            font-size: 4rem;
+        }
+        
+        .empty-state h3 {
+            color: #495057;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+        
+        .empty-state p {
+            color: #6c757d;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        /* Notification banners */
+        .notification-banner {
+            background: linear-gradient(135deg, #ffd166 0%, #ffc745 100%);
+            color: #2f3542;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
-            margin: 0.5rem 0 1rem;
+            gap: 1rem;
+            box-shadow: 0 4px 12px rgba(255, 193, 69, 0.2);
         }
         
-        .rating-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: white;
-            background: rgba(0,0,0,0.2);
-            padding: 0.5rem 1.25rem;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-        
-        .rating-stars {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        
-        .rating-stars i {
-            font-size: 1.4rem;
-        }
-        
-        /* Individual trainer colors */
-        .trainer-card:nth-child(3n+1) .trainer-header {
+        .notification-banner.warning {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-        }
-        
-        .trainer-card:nth-child(3n+1) .trainer-avatar {
-            background: white;
-            color: #ff6b6b;
-        }
-        
-        .trainer-card:nth-child(3n+1) .rating-stars i,
-        .trainer-card:nth-child(3n+1) .trainer-info i {
-            color: #ff6b6b;
-        }
-        
-        .trainer-card:nth-child(3n+2) .trainer-header {
-            background: linear-gradient(135deg, #2ed573 0%, #1dd1a1 100%);
-        }
-        
-        .trainer-card:nth-child(3n+2) .trainer-avatar {
-            background: white;
-            color: #2ed573;
-        }
-        
-        .trainer-card:nth-child(3n+2) .rating-stars i,
-        .trainer-card:nth-child(3n+2) .trainer-info i {
-            color: #2ed573;
-        }
-        
-        .trainer-card:nth-child(3n+3) .trainer-header {
-            background: linear-gradient(135deg, #3742fa 0%, #5352ed 100%);
-        }
-        
-        .trainer-card:nth-child(3n+3) .trainer-avatar {
-            background: white;
-            color: #3742fa;
-        }
-        
-        .trainer-card:nth-child(3n+3) .rating-stars i,
-        .trainer-card:nth-child(3n+3) .trainer-info i {
-            color: #3742fa;
-        }
-        
-        /* Trainer status indicator */
-        .status-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 0.4rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            z-index: 3;
-        }
-        
-        .status-active {
-            background: rgba(46, 213, 115, 0.95);
             color: white;
         }
         
-        .status-inactive {
-            background: rgba(255, 165, 2, 0.95);
+        .notification-banner.info {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
             color: white;
-        }
-        
-        /* Container fixes */
-        .content-card {
-            overflow: visible !important;
-        }
-        
-        .card-body {
-            overflow: visible !important;
         }
         
         /* Dashboard content fixes */
@@ -433,50 +427,8 @@ $totalTrainers = count($trainers);
         
         #searchInput:focus {
             outline: none;
-            border-color: #ff4757;
-            box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.1);
-        }
-        
-        /* Empty state */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            grid-column: 1 / -1;
-        }
-        
-        .empty-state i {
-            color: #e9ecef;
-            margin-bottom: 1.5rem;
-            font-size: 4rem;
-        }
-        
-        .empty-state h3 {
-            color: #495057;
-            margin-bottom: 1rem;
-            font-size: 1.8rem;
-        }
-        
-        .empty-state p {
-            color: #6c757d;
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-        }
-        
-        /* No results message */
-        .no-results {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 3rem;
-        }
-        
-        /* Welcome banner adjustments */
-        .welcome-banner {
-            margin-bottom: 2rem;
-        }
-        
-        /* Top bar adjustments */
-        .top-bar {
-            margin-bottom: 1.5rem;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
         }
     </style>
 </head>
@@ -487,11 +439,11 @@ $totalTrainers = count($trainers);
         <div class="top-bar">
             <div class="search-bar">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search trainers by name, specialization..." id="searchInput">
+                <input type="text" placeholder="Search deleted trainers..." id="searchInput">
             </div>
             <div class="top-bar-actions">
-                <button class="btn-primary" onclick="window.location.href='admin-add-trainer.php'">
-                    <i class="fas fa-plus"></i> Add New Trainer
+                <button class="btn-primary" onclick="window.location.href='admin-trainers.php'">
+                    <i class="fas fa-arrow-left"></i> Back to Active Trainers
                 </button>
             </div>
         </div>
@@ -499,46 +451,73 @@ $totalTrainers = count($trainers);
         <div class="dashboard-content">
             <div class="welcome-banner">
                 <div class="welcome-content">
-                    <h1>Manage Trainers</h1>
-                    <p>Professional fitness trainers at CONQUER Gym</p>
+                    <h1>Recently Deleted Trainers</h1>
+                    <p>Trainers deleted within the last 30 days - Can be restored</p>
                 </div>
                 <div class="welcome-stats">
                     <div class="stat">
-                        <h3><?php echo $totalTrainers; ?></h3>
-                        <p>Total Trainers</p>
+                        <h3><?php echo $totalDeleted; ?></h3>
+                        <p>Deleted Trainers</p>
                     </div>
                     <div class="stat">
-                        <h3><?php echo count(array_filter($trainers, fn($t) => $t['is_active'] == 1)); ?></h3>
-                        <p>Active Trainers</p>
+                        <h3>30</h3>
+                        <p>Days to Restore</p>
                     </div>
                 </div>
             </div>
 
+            <?php if(isset($_SESSION['success_message'])): ?>
+                <div class="notification-banner info">
+                    <i class="fas fa-check-circle"></i>
+                    <div><?php echo $_SESSION['success_message']; unset($_SESSION['success_message']); ?></div>
+                </div>
+            <?php endif; ?>
+            
+            <?php if(isset($_SESSION['error_message'])): ?>
+                <div class="notification-banner warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div><?php echo $_SESSION['error_message']; unset($_SESSION['error_message']); ?></div>
+                </div>
+            <?php endif; ?>
+
+            <?php if($totalDeleted == 0): ?>
+                <div class="notification-banner">
+                    <i class="fas fa-info-circle"></i>
+                    <div><strong>No recently deleted trainers found.</strong> Trainers are only kept in this list for 30 days after deletion.</div>
+                </div>
+            <?php endif; ?>
+
             <div class="content-card">
                 <div class="card-header">
-                    <h3>Trainers Directory</h3>
+                    <h3>Deleted Trainers (Last 30 Days)</h3>
                     <span class="btn-secondary" style="padding: 0.75rem 1.25rem; font-size: 0.95rem;">
-                        <i class="fas fa-sort-alpha-down"></i> Sorted by Name
+                        <i class="fas fa-clock"></i> Auto-deletes after 30 days
                     </span>
                 </div>
                 <div class="card-body">
-                    <?php if($totalTrainers > 0): ?>
+                    <?php if($totalDeleted > 0): ?>
                         <div class="trainer-grid" id="trainerGrid">
-                            <?php foreach($trainers as $index => $trainer): 
+                            <?php foreach($deletedTrainers as $index => $trainer): 
                                 $rating = floatval($trainer['rating'] ?? 0);
                                 $fullStars = floor($rating);
                                 $hasHalfStar = ($rating - $fullStars) >= 0.3;
-                                $isActive = $trainer['is_active'] == 1;
                                 $totalClasses = $trainer['total_classes'] ?? 0;
                                 $experienceYears = $trainer['years_experience'] ?? 0;
+                                $deletedAt = new DateTime($trainer['deleted_at']);
+                                $now = new DateTime();
+                                $interval = $deletedAt->diff($now);
+                                $daysAgo = $interval->days;
+                                $daysRemaining = 30 - $daysAgo;
                             ?>
-                                <div class="trainer-card" data-trainer-id="<?php echo $trainer['id']; ?>">
+                                <div class="trainer-card deleted" data-trainer-id="<?php echo $trainer['id']; ?>">
+                                    <div class="deleted-badge">
+                                        DELETED
+                                    </div>
+                                    <div class="days-remaining">
+                                        <?php echo $daysRemaining > 0 ? $daysRemaining . ' days left' : 'EXPIRED'; ?>
+                                    </div>
+                                    
                                     <div class="trainer-header">
-                                        <!-- Status Badge -->
-                                        <div class="status-badge <?php echo $isActive ? 'status-active' : 'status-inactive'; ?>">
-                                            <?php echo $isActive ? 'ACTIVE' : 'INACTIVE'; ?>
-                                        </div>
-                                        
                                         <div class="trainer-avatar">
                                             <i class="fas fa-user-tie"></i>
                                         </div>
@@ -568,8 +547,9 @@ $totalTrainers = count($trainers);
                                             <p><i class="fas fa-envelope"></i> <span><?php echo htmlspecialchars($trainer['email'] ?? 'No email'); ?></span></p>
                                             <p><i class="fas fa-certificate"></i> <span><strong>Certifications:</strong> <?php echo htmlspecialchars($trainer['certification'] ?? 'Not Certified'); ?></span></p>
                                             <p><i class="fas fa-history"></i> <span><strong>Experience:</strong> <?php echo $experienceYears; ?> years</span></p>
+                                            <p><i class="fas fa-calendar-times"></i> <span><strong>Deleted:</strong> <?php echo date('M d, Y', strtotime($trainer['deleted_at'])); ?> (<?php echo $daysAgo; ?> days ago)</span></p>
                                             <?php if(!empty($trainer['bio'])): ?>
-                                                <p><i class="fas fa-info-circle"></i> <span><?php echo htmlspecialchars(substr($trainer['bio'], 0, 120)); ?><?php echo strlen($trainer['bio']) > 120 ? '...' : ''; ?></span></p>
+                                                <p><i class="fas fa-info-circle"></i> <span><?php echo htmlspecialchars(substr($trainer['bio'], 0, 100)); ?><?php echo strlen($trainer['bio']) > 100 ? '...' : ''; ?></span></p>
                                             <?php endif; ?>
                                         </div>
                                         
@@ -589,11 +569,17 @@ $totalTrainers = count($trainers);
                                         </div>
                                         
                                         <div class="trainer-actions">
-                                            <a href="admin-edit-trainer.php?id=<?php echo $trainer['id']; ?>" class="btn-sm">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                            <button class="btn-sm btn-danger" onclick="confirmDelete(<?php echo $trainer['id']; ?>, '<?php echo htmlspecialchars($trainer['full_name']); ?>')">
-                                                <i class="fas fa-trash"></i> Delete
+                                            <?php if($daysRemaining > 0): ?>
+                                                <a href="admin-restore-trainer.php?id=<?php echo $trainer['id']; ?>" class="btn-sm btn-success" onclick="return confirmRestore('<?php echo htmlspecialchars($trainer['full_name']); ?>')">
+                                                    <i class="fas fa-undo"></i> Restore
+                                                </a>
+                                            <?php else: ?>
+                                                <button class="btn-sm" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                                    <i class="fas fa-ban"></i> Expired
+                                                </button>
+                                            <?php endif; ?>
+                                            <button class="btn-sm btn-danger" onclick="confirmPermanentDelete(<?php echo $trainer['id']; ?>, '<?php echo htmlspecialchars($trainer['full_name']); ?>')">
+                                                <i class="fas fa-trash"></i> Delete Permanently
                                             </button>
                                         </div>
                                     </div>
@@ -602,11 +588,11 @@ $totalTrainers = count($trainers);
                         </div>
                     <?php else: ?>
                         <div class="empty-state">
-                            <i class="fas fa-users fa-4x"></i>
-                            <h3>No Trainers Found</h3>
-                            <p>Add your first trainer to get started</p>
-                            <button class="btn-primary" onclick="window.location.href='admin-add-trainer.php'">
-                                <i class="fas fa-plus"></i> Add Your First Trainer
+                            <i class="fas fa-trash-restore fa-4x"></i>
+                            <h3>No Recently Deleted Trainers</h3>
+                            <p>Deleted trainers will appear here for 30 days before being permanently removed.</p>
+                            <button class="btn-primary" onclick="window.location.href='admin-trainers.php'">
+                                <i class="fas fa-arrow-left"></i> Back to Active Trainers
                             </button>
                         </div>
                     <?php endif; ?>
@@ -616,10 +602,13 @@ $totalTrainers = count($trainers);
     </div>
 
     <script>
-        function confirmDelete(trainerId, trainerName) {
-            if(confirm(`Are you sure you want to delete trainer "${trainerName}"? This action cannot be undone.`)) {
-                // Redirect to delete script
-                window.location.href = 'admin-delete-trainer.php?id=' + trainerId;
+        function confirmRestore(trainerName) {
+            return confirm(`Are you sure you want to restore trainer "${trainerName}"? This will make them active again.`);
+        }
+        
+        function confirmPermanentDelete(trainerId, trainerName) {
+            if(confirm(`WARNING: This will permanently delete trainer "${trainerName}" and cannot be undone. Are you sure?`)) {
+                window.location.href = 'admin-permanent-delete.php?id=' + trainerId;
             }
         }
         
@@ -636,15 +625,10 @@ $totalTrainers = count($trainers);
                 const email = card.querySelector('.trainer-info p:nth-child(1) span').textContent.toLowerCase();
                 const certifications = card.querySelector('.trainer-info p:nth-child(2) span').textContent.toLowerCase();
                 
-                // Get bio if exists
-                const bioElement = card.querySelector('.trainer-info p:nth-child(4) span');
-                const bio = bioElement ? bioElement.textContent.toLowerCase() : '';
-                
                 if (trainerName.includes(searchTerm) || 
                     specialization.includes(searchTerm) || 
                     email.includes(searchTerm) ||
-                    certifications.includes(searchTerm) ||
-                    bio.includes(searchTerm)) {
+                    certifications.includes(searchTerm)) {
                     card.style.display = 'flex';
                     visibleCount++;
                 } else {
@@ -662,9 +646,8 @@ $totalTrainers = count($trainers);
                     noResultsMsg.className = 'empty-state no-results';
                     noResultsMsg.innerHTML = `
                         <i class="fas fa-search fa-3x"></i>
-                        <h3>No Matching Trainers</h3>
-                        <p>No trainers found matching "<strong>${searchTerm}</strong>"</p>
-                        <p style="margin-top: 1rem; font-size: 0.9rem;">Try searching by name, specialization, or certification</p>
+                        <h3>No Matching Deleted Trainers</h3>
+                        <p>No deleted trainers found matching "<strong>${searchTerm}</strong>"</p>
                     `;
                     trainerGrid.parentNode.insertBefore(noResultsMsg, trainerGrid.nextSibling);
                 }

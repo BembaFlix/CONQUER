@@ -2115,3 +2115,92 @@ table tbody tr:last-child td {
         border-color: var(--border-color);
     }
 }
+/* Payment Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--light-color);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--light-color);
+}
+
+/* Button variations */
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.btn-info {
+    background: var(--info);
+    color: white;
+    border: none;
+}
+
+.btn-info:hover {
+    background: #2980b9;
+}
+
+/* Receipt preview */
+.receipt-preview {
+    border: 2px dashed var(--light-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: center;
+    background: var(--light-bg);
+}
+
+.receipt-preview img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+}

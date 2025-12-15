@@ -8,7 +8,7 @@ if(!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || $_SESSION['
 }
 
 if(!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: admin-trainers.php');
+    header('Location: admin-recently-deleted.php');
     exit();
 }
 
@@ -31,29 +31,28 @@ try {
     }
     
     $userId = $trainer['user_id'];
-    $currentTime = date('Y-m-d H:i:s');
     
-    // Soft delete the trainer (set deleted_at timestamp)
-    $updateTrainer = "UPDATE trainers SET deleted_at = :deleted_at WHERE id = :id";
+    // Restore the trainer (set deleted_at to NULL)
+    $updateTrainer = "UPDATE trainers SET deleted_at = NULL WHERE id = :id";
     $stmt = $pdo->prepare($updateTrainer);
-    $stmt->execute([':deleted_at' => $currentTime, ':id' => $trainerId]);
+    $stmt->execute([':id' => $trainerId]);
     
-    // Soft delete the user account as well
-    $updateUser = "UPDATE users SET deleted_at = :deleted_at WHERE id = :id";
+    // Restore the user account as well
+    $updateUser = "UPDATE users SET deleted_at = NULL WHERE id = :id";
     $stmt = $pdo->prepare($updateUser);
-    $stmt->execute([':deleted_at' => $currentTime, ':id' => $userId]);
+    $stmt->execute([':id' => $userId]);
     
     $pdo->commit();
     
-    $_SESSION['success_message'] = "Trainer has been moved to recently deleted. You can restore within 30 days.";
+    $_SESSION['success_message'] = "Trainer has been successfully restored!";
     
 } catch(Exception $e) {
     if(isset($pdo)) {
         $pdo->rollBack();
     }
-    $_SESSION['error_message'] = "Error deleting trainer: " . $e->getMessage();
+    $_SESSION['error_message'] = "Error restoring trainer: " . $e->getMessage();
 }
 
-header('Location: admin-trainers.php');
+header('Location: admin-recently-deleted.php');
 exit();
 ?>
